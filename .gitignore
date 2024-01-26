@@ -1,0 +1,13 @@
+**/build/
+**.user
+**/CMakeFiles/
+**/.cache/
+**/CMakeCache.txt
+**/compile_commands.json
+**/.qtc/
+**/.cmake/
+**.prev
+**/PhysicsSimulator
+**/PhysicsSimulator_autogen/
+**/Testing/
+**/qtcsettings.cmake
