@@ -15,6 +15,10 @@ public:
   MainWindow(QWidget *parent = nullptr);
   ~MainWindow();
 
+protected:
+  void paintEvent(QPaintEvent *event) override;
+  void timerEvent(QTimerEvent *event) override;
+
 private:
   Ui::MainWindow *ui;
 };
