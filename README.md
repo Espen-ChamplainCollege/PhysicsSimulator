@@ -3,6 +3,7 @@
 ## Contributors
 Connor Hill
 Espen Wold
+Harrison Labrecque
 
 Tyler Chasse
 ## Getting started
@@ -20,12 +21,12 @@ Create a branch to work on `git checkout -b yourBranchName`
 Now if you open Qt Creator, and go to open project, you can open the file `CMakeLists.txt` to load the project in Qt Creator
 (There is no "Qt project file", it just lives in the `CMakeLists.txt` file.)
 
-At this point you can work on the project like usual. Remember to `git add (files)` to add your changes anda `git commit -m "message"` to commit them. 
-
+At this point you can work on the project like usual. Remember to `git add (files)` to add your changes anda `git commit -m "message"` to commit them.
 
 ## Program Structure
 
 Like most C++ programs, `main.cpp` is the entry point of the application.
+
 ```
   QApplication a(argc, argv);   // <- Create a QApplication object. This object is basically the container for our application.
   MainWindow w;                 // <- Create a MainWindow object. This is self explanatory, it's just the window.
