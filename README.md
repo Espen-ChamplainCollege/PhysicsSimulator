@@ -3,8 +3,7 @@
 ## Contributors
 
 Espen Wold
-Harrison Labrecque
-
+Harrison Labrecuqe
 ## Getting started
 
 You should have [Qt](https://www.qt.io/download-qt-installer-oss) installed already.
