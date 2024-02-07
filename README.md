@@ -1,7 +1,7 @@
 # PhysicsSimulator
 
 ## Contributors
-
+Connor Hill
 Espen Wold
 
 ## Getting started
