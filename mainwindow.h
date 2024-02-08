@@ -2,7 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-
+#include <qwidget.h>
+#include "sandbox.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -17,10 +18,11 @@ public:
 
 protected:
   void paintEvent(QPaintEvent *event) override;
+  void mouseReleaseEvent(QMouseEvent *event) override;
   void timerEvent(QTimerEvent *event) override;
-
 private:
   Ui::MainWindow *ui;
+  Sandbox *sandbox;
 };
 
 #endif // MAINWINDOW_H
