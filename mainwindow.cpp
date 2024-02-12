@@ -5,6 +5,7 @@
 #include <qwindowdefs.h>
 #include <qevent.h>
 #include "sphere.h"
+#include "hexagon.h"
 
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -42,6 +43,15 @@ void MainWindow::paintEvent(QPaintEvent *event){
       sandbox->spheres[i]->radius, 
       sandbox->spheres[i]->radius
     );  // Draw ellipse (x, y, width, height) 
+  }
+  for (int i = 0; i < sandbox->hexagons.size(); i++) {
+      painter.setBrush(QColor(sandbox->hexagons[i]->color));
+      // Qt documentation for drawPolygon()
+      // https://doc.qt.io/qt-6/qpainter.html#drawPolygon
+      painter.drawPolygon(
+          sandbox->hexagons[i]->points,
+          6
+      );  // Draw polygon (points (vertices), 6 (sides)) 
   }
   
 
