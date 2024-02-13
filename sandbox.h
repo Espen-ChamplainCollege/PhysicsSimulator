@@ -37,7 +37,7 @@ struct Sandbox {
     ));
   }
   const void addButtons(){
-    buttons[Button(Point((float)width / 2 - 125, 50), 250, 50, "Example Button (Sphere)")] 
+    buttons[Button(Point((float)width / 2 - 125, height - 75), 250, 50, "Example Button (Sphere)")] 
       = &Sandbox::addSphere;
   }
   const void tryClickButtons(const Point &pos){
