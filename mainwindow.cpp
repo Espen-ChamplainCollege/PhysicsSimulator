@@ -28,7 +28,6 @@ MainWindow::~MainWindow(){
 }
 
 void MainWindow::paintEvent(QPaintEvent *event){
-
   QPainter painter(this);                         // Make a painter. "this" is the window.
   painter.setRenderHint(QPainter::Antialiasing);  // Turn on antialiasing
 
@@ -43,7 +42,18 @@ void MainWindow::paintEvent(QPaintEvent *event){
       sandbox->spheres[i]->radius
     );  // Draw ellipse (x, y, width, height) 
   }
-  
+
+  static const QPointF points[3] = {
+      QPointF(50.0, 50.0),
+      QPointF(50.0, 50.0),
+      QPointF(50.0, 50.0)
+  };
+
+  painter.setPen(QPen(Qt::transparent));
+  for(int i = 0; i < sandbox->triangles.size(); i++) {
+      painter.setBrush(QColor(sandbox->triangles[i]->color));
+      painter.drawPolygon(points, 3, Qt::OddEvenFill);
+  }
 
   // We draw the buttons/UI second because it needs to be on top.
   painter.setPen(QPen(Qt::white));

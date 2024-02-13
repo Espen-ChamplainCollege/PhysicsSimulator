@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include "button.h"
 #include "sphere.h"
+#include "triangle.h"
 
 struct Sandbox {
   // std::vector<Shape> shapes <- We should have a parent class _Shape_
@@ -36,9 +37,20 @@ struct Sandbox {
       20
     ));
   }
+  std::vector<Triangle*> triangles;
+  void addTriangle(){
+      triangles.push_back(
+          new Triangle(Point::randomPoint(21, width - 21, 21, height - 21),
+                       Point::randomPoint(-10, 10, -10, 10),
+                       Color::randomColor()
+                       ));
+  }
   const void addButtons(){
     buttons[Button(Point((float)width / 2 - 125, height - 75), 250, 50, "Example Button (Sphere)")] 
       = &Sandbox::addSphere;
+
+      buttons[Button(Point((float)width / 2 - 210, height - 75), 80, 50, "Triangle")]
+        = &Sandbox::addTriangle;
   }
   const void tryClickButtons(const Point &pos){
     for(auto i = buttons.begin(); i != buttons.end(); i++){
