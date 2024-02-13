@@ -10,10 +10,10 @@ struct Hexagon {
 	Point velocity;
 	// painter.drawPolygon() requires a QPointF
 	QPointF points[6];
-	float radius;
+	//float radius;
 	Color color;
-	Hexagon(const Point& p, const Color& c, float r)
-		: position(p), color(c), radius(r)
+	Hexagon(const Point& p, const Color& c)
+		: position(p), color(c)
 	{
 		// 6 vertices are placed in relation to center 'position' point
 		// How I decided upon coordinates for points:
@@ -27,8 +27,8 @@ struct Hexagon {
 		points[4] = QPointF(position.x + 8, position.y + 14);
 		points[5] = QPointF(position.x - 8, position.y + 14);
 	};
-	Hexagon(const Point& p, const Point& v, const Color& c, float r)
-		: position(p), velocity(v), color(c), radius(r)
+	Hexagon(const Point& p, const Point& v, const Color& c)
+		: position(p), velocity(v), color(c)
 	{
 		points[0] = QPointF(position.x - 16, position.y);
 		points[1] = QPointF(position.x - 8, position.y - 14);

@@ -45,8 +45,7 @@ struct Sandbox {
           // 21 should probably change here but I'm not sure what to
           new Hexagon(Point::randomPoint(21, width - 21, 21, height - 21),
               Point::randomPoint(-10, 10, -10, 10),
-              Color::randomColor(),
-              20
+              Color::randomColor()
           ));
   }
   const void addButtons(){
