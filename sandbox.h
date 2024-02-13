@@ -42,6 +42,7 @@ struct Sandbox {
   void addHexagon() {
       hexagons.push_back(
           // 21 so it doesnt get stuck in the wall (radius is 20)
+          // 21 should probably change here but I'm not sure what to
           new Hexagon(Point::randomPoint(21, width - 21, 21, height - 21),
               Point::randomPoint(-10, 10, -10, 10),
               Color::randomColor(),
@@ -51,6 +52,7 @@ struct Sandbox {
   const void addButtons(){
     buttons[Button(Point((float)width / 2 - 125, 50), 250, 50, "Example Button (Sphere)")] 
       = &Sandbox::addSphere;
+    // add hexagon button
     buttons[Button(Point((float)width / 2 - 125, 1), 250, 50, "Example Button (Hexagon)")]
       = &Sandbox::addHexagon;
   }
@@ -104,12 +106,14 @@ private:
       }
       spheres[i]->position += spheres[i]->velocity;
     }
+    // update hexagons
     for (int i = 0; i < hexagons.size(); i++) {
-        Point nextPos = hexagons[i]->position + hexagons[i]->velocity;
-        if (nextPos.y + hexagons[i]->radius > this->height || nextPos.y < 0) {
+        // if next pos will be out of bounds (top or bottom), go other direction
+        if (hexagons[i]->points[4].y() + hexagons[i]->velocity.y > this->height || hexagons[i]->points[1].y() + hexagons[i]->velocity.y < 0) {
             hexagons[i]->velocity.y *= -1;
         }
-        if (nextPos.x + hexagons[i]->radius > this->width || nextPos.x < 0) {
+        // if next pos will be out of bounds (left or right), go other direction
+        if (hexagons[i]->points[3].x() + hexagons[i]->velocity.x > this->width || hexagons[i]->points[0].x() + hexagons[i]->velocity.x < 0) {
             hexagons[i]->velocity.x *= -1;
         }
         hexagons[i]->position += hexagons[i]->velocity;
