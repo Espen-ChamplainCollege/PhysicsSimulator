@@ -3,9 +3,11 @@
 #include "qpainter.h"
 #include <qnamespace.h>
 #include "sphere.h"
+#include "qpolygon.h"
 
 
 Sphere *sphere;
+QPolygon polygon;
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
   ui->setupUi(this);
@@ -16,6 +18,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
   this->setPalette(palette);
 
   sphere = new Sphere(Point(50, 50), Point(2.5, 2.5), Color(255, 255, 255), 25);
+  polygon << QPoint(100,100) << QPoint(70,130) << QPoint(85,160) << QPoint(115,160) << QPoint(130,130);
 
   this->startTimer(16); // 16 milliseconds roughly = 60fps
 }
@@ -33,6 +36,8 @@ void MainWindow::paintEvent(QPaintEvent *event){
   
   painter.drawEllipse(sphere->position.x, sphere->position.y, sphere->radius, sphere->radius);  // Draw ellipse (x, y, width, height) 
   // In QT, (0, 0) is the top left corner. As y increases, the position moves down. As x increases, the position moves right.
+
+  painter.drawPolygon(polygon);
 
 }
 
