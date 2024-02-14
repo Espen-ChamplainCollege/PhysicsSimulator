@@ -42,8 +42,9 @@ struct Sandbox {
       triangles.push_back(
           new Triangle(Point::randomPoint(21, width - 21, 21, height - 21),
                        Point::randomPoint(-10, 10, -10, 10),
-                       Color::randomColor()
-                       ));
+                       Color::randomColor(),
+                       20)
+        );
   }
   const void addButtons(){
     buttons[Button(Point((float)width / 2 - 125, height - 75), 250, 50, "Example Button (Sphere)")] 
@@ -101,6 +102,21 @@ private:
         spheres[i]->velocity.x *= -1;
       }
       spheres[i]->position += spheres[i]->velocity;
+    }
+
+    for(int i = 0; i < triangles.size(); i++){
+        Point nextPos = triangles[i]->position + triangles[i]->velocity;
+        if (nextPos.y + triangles[i]->radius > this->height || nextPos.y < 0){
+            triangles[i]->velocity.y *= -1;
+        }
+        if (nextPos.x + triangles[i]->radius > this->width || nextPos.x < 0){
+            triangles[i]->velocity.x *= -1;
+        }
+        triangles[i]->position += triangles[i]->velocity;
+        for (int j = 0; j < 3; j++){
+            triangles[i]->points[j].setX(triangles[i]->points[j].x() + triangles[i]->velocity.x);
+            triangles[i]->points[j].setY(triangles[i]->points[j].y() + triangles[i]->velocity.y);
+        }
     }
   }
 };

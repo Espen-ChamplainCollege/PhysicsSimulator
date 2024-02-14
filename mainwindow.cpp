@@ -6,6 +6,9 @@
 #include <qevent.h>
 #include "sphere.h"
 
+#include "triangle.h"
+
+
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
   ui->setupUi(this);
@@ -45,15 +48,12 @@ void MainWindow::paintEvent(QPaintEvent *event){
 
 
 
-  painter.setPen(QPen(Qt::transparent));
   for(int i = 0; i < sandbox->triangles.size(); i++) {
-      static const QPointF points[3] = {
-          QPointF(50.0, 50.0),
-          QPointF(50.0, 50.0),
-          QPointF(50.0, 50.0)
-      };
       painter.setBrush(QColor(sandbox->triangles[i]->color));
-      painter.drawPolygon(points, 3, Qt::OddEvenFill);
+      painter.drawPolygon(
+          sandbox->triangles[i]->points,
+          3
+      );
   }
 
   // We draw the buttons/UI second because it needs to be on top.
