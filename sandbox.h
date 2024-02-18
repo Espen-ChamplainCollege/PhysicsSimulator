@@ -9,6 +9,7 @@
 #include "button.h"
 #include "sphere.h"
 #include "hexagon.h"
+#include "triangle.h"
 
 struct Sandbox {
   // std::vector<Shape> shapes <- We should have a parent class _Shape_
@@ -40,20 +41,31 @@ struct Sandbox {
   }
   // Example add hexagon function
   void addHexagon() {
+      // hard coded right now but could implement this to be user controlled
+      float size = 16;
       hexagons.push_back(
-          // 21 so it doesnt get stuck in the wall (radius is 20)
-          // 21 should probably change here but I'm not sure what to
-          new Hexagon(Point::randomPoint(21, width - 21, 21, height - 21),
+          new Hexagon(Point::randomPoint(size + 1, width - (size + 1), size + 1, height - (size + 1)),
               Point::randomPoint(-10, 10, -10, 10),
-              Color::randomColor()
+              Color::randomColor(),
+              size
           ));
   }
+  std::vector<Triangle*> triangles;
+  void addTriangle() {
+      triangles.push_back(
+          new Triangle(Point::randomPoint(21, width - 21, 21, height - 21),
+              Point::randomPoint(-10, 10, -10, 10),
+              Color::randomColor(),
+              20)
+      );
+  }
   const void addButtons(){
-    buttons[Button(Point((float)width / 2 - 125, 50), 250, 50, "Example Button (Sphere)")] 
+    buttons[Button(Point((float)width / 2 - 125, height - 75), 250, 50, "Example Button (Sphere)")] 
       = &Sandbox::addSphere;
-    // add hexagon button
-    buttons[Button(Point((float)width / 2 - 125, 1), 250, 50, "Example Button (Hexagon)")]
+    buttons[Button(Point((float)width / 2 + 130, height - 75), 80, 50, "Hexagon")]
       = &Sandbox::addHexagon;
+    buttons[Button(Point((float)width / 2 - 210, height - 75), 80, 50, "Triangle")]
+      = &Sandbox::addTriangle;
   }
   const void tryClickButtons(const Point &pos){
     for(auto i = buttons.begin(); i != buttons.end(); i++){
@@ -105,6 +117,7 @@ private:
       }
       spheres[i]->position += spheres[i]->velocity;
     }
+
     // update hexagons
     for (int i = 0; i < hexagons.size(); i++) {
         // if next pos will be out of bounds (top or bottom), go other direction
@@ -121,6 +134,22 @@ private:
         {
             hexagons[i]->points[j].setX(hexagons[i]->points[j].x() + hexagons[i]->velocity.x);
             hexagons[i]->points[j].setY(hexagons[i]->points[j].y() + hexagons[i]->velocity.y);
+        }
+    }
+          
+    for(int i = 0; i < triangles.size(); i++){
+        Point nextPos = triangles[i]->position + triangles[i]->velocity;
+        if (nextPos.y + triangles[i]->radius > this->height || nextPos.y < 0){
+            triangles[i]->velocity.y *= -1;
+        }
+        if (nextPos.x + triangles[i]->radius > this->width || nextPos.x < 0){
+            triangles[i]->velocity.x *= -1;
+        }
+        triangles[i]->position += triangles[i]->velocity;
+        for (int j = 0; j < 3; j++){
+            triangles[i]->points[j].setX(triangles[i]->points[j].x() + triangles[i]->velocity.x);
+            triangles[i]->points[j].setY(triangles[i]->points[j].y() + triangles[i]->velocity.y);
+
         }
     }
   }

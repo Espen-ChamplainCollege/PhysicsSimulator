@@ -6,6 +6,7 @@
 #include <qevent.h>
 #include "sphere.h"
 #include "hexagon.h"
+#include "triangle.h"
 
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -29,7 +30,6 @@ MainWindow::~MainWindow(){
 }
 
 void MainWindow::paintEvent(QPaintEvent *event){
-
   QPainter painter(this);                         // Make a painter. "this" is the window.
   painter.setRenderHint(QPainter::Antialiasing);  // Turn on antialiasing
 
@@ -44,6 +44,7 @@ void MainWindow::paintEvent(QPaintEvent *event){
       sandbox->spheres[i]->radius
     );  // Draw ellipse (x, y, width, height) 
   }
+  
   for (int i = 0; i < sandbox->hexagons.size(); i++) {
       painter.setBrush(QColor(sandbox->hexagons[i]->color));
       // Qt documentation for drawPolygon()
@@ -53,7 +54,14 @@ void MainWindow::paintEvent(QPaintEvent *event){
           6
       );  // Draw polygon (points (vertices), 6 (sides)) 
   }
-  
+
+  for(int i = 0; i < sandbox->triangles.size(); i++) {
+      painter.setBrush(QColor(sandbox->triangles[i]->color));
+      painter.drawPolygon(
+          sandbox->triangles[i]->points,
+          3
+      );
+  }
 
   // We draw the buttons/UI second because it needs to be on top.
   painter.setPen(QPen(Qt::white));
