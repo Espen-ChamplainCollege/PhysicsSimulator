@@ -63,6 +63,14 @@ void MainWindow::paintEvent(QPaintEvent *event){
       );
   }
 
+  for(int i = 0; i < sandbox->triangles.size(); i++) {
+      painter.setBrush(QColor(sandbox->triangles[i]->color));
+      painter.drawPolygon(
+          sandbox->triangles[i]->points,
+          3
+      );
+  }
+
   // We draw the buttons/UI second because it needs to be on top.
   painter.setPen(QPen(Qt::white));
   painter.setBrush(QColor::fromRgb(20, 24, 29));

@@ -39,6 +39,7 @@ struct Sandbox {
       20
     ));
   }
+  
   // Example add hexagon function
   void addHexagon() {
       // hard coded right now but could implement this to be user controlled
@@ -50,15 +51,18 @@ struct Sandbox {
               size
           ));
   }
+  
   std::vector<Triangle*> triangles;
-  void addTriangle() {
+  void addTriangle(){
       triangles.push_back(
           new Triangle(Point::randomPoint(21, width - 21, 21, height - 21),
-              Point::randomPoint(-10, 10, -10, 10),
-              Color::randomColor(),
-              20)
-      );
+                       Point::randomPoint(-10, 10, -10, 10),
+                       Color::randomColor(),
+                       20)
+        );
+
   }
+
   const void addButtons(){
     buttons[Button(Point((float)width / 2 - 125, height - 75), 250, 50, "Example Button (Sphere)")] 
       = &Sandbox::addSphere;
