@@ -16,6 +16,7 @@ struct Point {
   Point(const std::pair<double, double> &p) : x(p.first), y(p.second){};
   #ifdef QGLOBAL_H
   Point(const QPoint &p) : x(p.x()), y(p.y()){};
+  Point(const QPointF &p) : x(p.x()), y(p.y()){};
   #endif
   Point() : x(0), y(0){};
   // distance functions
