@@ -36,6 +36,8 @@ struct Sandbox {
       Color::randomColor(), 
       20
     ));
+    spheres[spheres.size() - 1]->angularVelocity = Point::randomPoint(-10, 10, -10, 10).x;
+    // ^ this is lazy, will fix later
   }
   std::vector<Triangle*> triangles;
   void addTriangle(){
@@ -45,6 +47,8 @@ struct Sandbox {
                        Color::randomColor(),
                        20)
         );
+      triangles[triangles.size() - 1]->angularVelocity = Point::randomPoint(-10, 10, -10, 10).x;
+      // ^ this is lazy, will fix later
   }
   const void addButtons(){
     buttons[Button(Point((float)width / 2 - 125, height - 75), 250, 50, "Example Button (Sphere)")] 
@@ -102,6 +106,7 @@ private:
         spheres[i]->velocity.x *= -1;
       }
       spheres[i]->position += spheres[i]->velocity;
+      spheres[i]->rotation += spheres[i]->angularVelocity;
     }
 
     for(int i = 0; i < triangles.size(); i++){
@@ -117,6 +122,7 @@ private:
             triangles[i]->points[j].setX(triangles[i]->points[j].x() + triangles[i]->velocity.x);
             triangles[i]->points[j].setY(triangles[i]->points[j].y() + triangles[i]->velocity.y);
         }
+        triangles[i]->rotation += triangles[i]->angularVelocity;
     }
   }
 };

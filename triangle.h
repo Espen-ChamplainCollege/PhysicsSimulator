@@ -9,6 +9,8 @@ struct Triangle {
     Point position;
     Point velocity;
     QPointF points[3];
+    float rotation;
+    float angularVelocity;
     float radius;
     Color color;
 
