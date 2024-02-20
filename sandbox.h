@@ -38,6 +38,8 @@ struct Sandbox {
       Color::randomColor(), 
       20
     ));
+    spheres[spheres.size() - 1]->angularVelocity = Point::randomPoint(-10, 10, -10, 10).x;
+    // ^ this is lazy, will fix later
   }
   
   // Example add hexagon function
@@ -50,6 +52,8 @@ struct Sandbox {
               Color::randomColor(),
               size
           ));
+      hexagons[hexagons.size() - 1]->angularVelocity = Point::randomPoint(-10, 10, -10, 10).x;
+      // ^ this is lazy, will fix later
   }
   
   std::vector<Triangle*> triangles;
@@ -60,7 +64,8 @@ struct Sandbox {
                        Color::randomColor(),
                        20)
         );
-
+      triangles[triangles.size() - 1]->angularVelocity = Point::randomPoint(-10, 10, -10, 10).x;
+      // ^ this is lazy, will fix later
   }
 
   const void addButtons(){
@@ -120,6 +125,7 @@ private:
         spheres[i]->velocity.x *= -1;
       }
       spheres[i]->position += spheres[i]->velocity;
+      spheres[i]->rotation += spheres[i]->angularVelocity;
     }
 
     // update hexagons
@@ -139,6 +145,8 @@ private:
             hexagons[i]->points[j].setX(hexagons[i]->points[j].x() + hexagons[i]->velocity.x);
             hexagons[i]->points[j].setY(hexagons[i]->points[j].y() + hexagons[i]->velocity.y);
         }
+        hexagons[i]->rotation += hexagons[i]->angularVelocity;
+
     }
           
     for(int i = 0; i < triangles.size(); i++){
@@ -155,6 +163,7 @@ private:
             triangles[i]->points[j].setY(triangles[i]->points[j].y() + triangles[i]->velocity.y);
 
         }
+        triangles[i]->rotation += triangles[i]->angularVelocity;
     }
   }
 };

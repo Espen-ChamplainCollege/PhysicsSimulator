@@ -10,6 +10,8 @@ struct Hexagon {
 	Point velocity;
 	// painter.drawPolygon() requires a QPointF
 	QPointF points[6];
+  float rotation;
+  float angularVelocity;
 	float width;
 	Color color;
 	Hexagon(const Point& p, const Color& c, float w)
