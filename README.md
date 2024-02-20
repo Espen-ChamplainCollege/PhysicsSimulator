@@ -4,7 +4,7 @@
 Connor Hill
 Espen Wold
 Harrison Labrecque
-
+Lorenzo Zimmerer
 Tyler Chasse
 ## Getting started
 
