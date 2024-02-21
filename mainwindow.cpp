@@ -5,8 +5,7 @@
 #include <qwindowdefs.h>
 #include <qevent.h>
 #include "sphere.h"
-#include "hexagon.h"
-#include "triangle.h"
+#include "util.h"
 
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -50,41 +49,19 @@ void MainWindow::paintEvent(QPaintEvent *event){
   // 2. center the transform on the object
   // 3. rotate the transform
   // 4. uncenter the transform on the object
+  //
+  //
+  for(int i = 0; i < sandbox->shapes.size(); i++){
+    Shape *s = sandbox->shapes[i];
+
+    painter.setBrush(QColor(s->color));
+    painter.resetTransform();
+    painter.translate(QPointF(s->position));
+    painter.rotate(s->rotation);
+    painter.translate(-QPointF(s->position));
+    painter.drawPolygon(Util::convertPointVector(s->verts), s->verts.size());
+  }
   
-  for (int i = 0; i < sandbox->hexagons.size(); i++) {
-      painter.setBrush(QColor(sandbox->hexagons[i]->color));
-      // Qt documentation for drawPolygon()
-      // https://doc.qt.io/qt-6/qpainter.html#drawPolygon
-      painter.resetTransform();  
-      painter.translate(QPoint(sandbox->hexagons[i]->position));
-      painter.rotate(sandbox->hexagons[i]->rotation);
-      painter.translate(-QPoint(sandbox->hexagons[i]->position));
-      painter.drawPolygon(
-          sandbox->hexagons[i]->points,
-          6
-      );  // Draw polygon (points (vertices), 6 (sides)) 
-  }
-  painter.resetTransform();  
-
-  for(int i = 0; i < sandbox->triangles.size(); i++) {
-      painter.setBrush(QColor(sandbox->triangles[i]->color));
-      painter.resetTransform();
-      Point triangleCenter = Point(0, 0);
-      for(int k = 0; k < 3; k++){
-        triangleCenter += Point(sandbox->triangles[i]->points[k]);
-      }
-      triangleCenter /= 3;
-      painter.translate(QPoint(triangleCenter));
-      painter.rotate(sandbox->triangles[i]->rotation);
-      painter.translate(-QPoint(triangleCenter));
-      painter.drawPolygon(
-          sandbox->triangles[i]->points,
-          3
-      );
-    // this triangle rotation stuff is a workaround because the triangle position is not the triangle's center.
-    // will fix later
-  }
-
   painter.resetTransform();
 
   // We draw the buttons/UI second because it needs to be on top.

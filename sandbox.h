@@ -7,6 +7,7 @@
 #include <thread>
 #include <unordered_map>
 #include "button.h"
+#include "shape.h"
 #include "sphere.h"
 #include "hexagon.h"
 #include "triangle.h"
@@ -18,6 +19,7 @@ struct Sandbox {
   // this is temporary just to show how the buttons work
   std::vector<Sphere*> spheres;
   std::vector<Hexagon*> hexagons;
+  std::vector<Shape*> shapes;
 
   Sandbox(int _width, int _height, std::chrono::duration<double, std::milli> _refreshRate) 
     : refreshRate(_refreshRate), width(_width), height(_height){};
@@ -45,27 +47,31 @@ struct Sandbox {
   // Example add hexagon function
   void addHexagon() {
       // hard coded right now but could implement this to be user controlled
-      float size = 16;
-      hexagons.push_back(
-          new Hexagon(Point::randomPoint(size + 1, width - (size + 1), size + 1, height - (size + 1)),
-              Point::randomPoint(-10, 10, -10, 10),
-              Color::randomColor(),
-              size
-          ));
-      hexagons[hexagons.size() - 1]->angularVelocity = Point::randomPoint(-10, 10, -10, 10).x;
-      // ^ this is lazy, will fix later
+    float hexWidth = 16;
+    shapes.push_back(
+      new Hexagon(Point::randomPoint(hexWidth + 1, width - (hexWidth + 1), hexWidth + 1, height - (hexWidth + 1)),
+        hexWidth,
+        Color::randomColor(),
+        Point::randomPoint(-10, 10, -10, 10),
+        0,
+        Point(0, 0),
+        Util::generalRandom(-15, 15) 
+      ));
   }
   
   std::vector<Triangle*> triangles;
   void addTriangle(){
-      triangles.push_back(
-          new Triangle(Point::randomPoint(21, width - 21, 21, height - 21),
-                       Point::randomPoint(-10, 10, -10, 10),
-                       Color::randomColor(),
-                       20)
-        );
-      triangles[triangles.size() - 1]->angularVelocity = Point::randomPoint(-10, 10, -10, 10).x;
-      // ^ this is lazy, will fix later
+    float triLen = 16;
+    shapes.push_back(
+      new Triangle(Point::randomPoint(triLen + 1, width - (triLen + 1), triLen + 1, height - (triLen + 1)),
+        triLen,
+        Color::randomColor(),
+        Point::randomPoint(-10, 10, -10, 10),
+        0,
+        Point(0, 0),
+        Util::generalRandom(-15, 15) 
+      ));
+
   }
 
   const void addButtons(){
@@ -116,54 +122,31 @@ private:
   const void update(){
     // something like, for each shape in shapes, update pos.
     // painting is handled on a different thread so we dont have to worry about that here
-    for(int i = 0; i < spheres.size(); i++){
-      Point nextPos = spheres[i]->position + spheres[i]->velocity;
-      if(nextPos.y + spheres[i]->radius > this->height || nextPos.y < 0){
-        spheres[i]->velocity.y *= -1;
+
+
+    // this is very slow like O(n^2) with n being the amount of vertices.
+    for(int i = 0; i < shapes.size(); i++){
+      bool ychange = false, xchange = false;
+      for(int k = 0; k < shapes[i]->verts.size(); k++){
+        if(ychange && xchange) break;
+        if(!ychange && (shapes[i]->verts[k].y + shapes[i]->velocity.y > this->height ||
+           shapes[i]->verts[k].y + shapes[i]->velocity.y < 0)){
+          shapes[i]->velocity.y *= -1;
+          ychange = true;
+        }
+        if(!xchange && (shapes[i]->verts[k].x + shapes[i]->velocity.x > this->width ||
+           shapes[i]->verts[k].x + shapes[i]->velocity.x < 0)){
+          shapes[i]->velocity.x *= -1;
+          xchange = true;
+        }
       }
-      if(nextPos.x + spheres[i]->radius > this->width || nextPos.x < 0){
-        spheres[i]->velocity.x *= -1;
+      shapes[i]->rotation += shapes[i]->angularVelocity;
+      Point oldPosition = shapes[i]->position;
+      shapes[i]->position += shapes[i]->velocity;
+      for(int k = 0; k < shapes[i]->verts.size(); k++){
+        Point diff = shapes[i]->verts[k] - oldPosition;
+        shapes[i]->verts[k] = shapes[i]->position + diff;
       }
-      spheres[i]->position += spheres[i]->velocity;
-      spheres[i]->rotation += spheres[i]->angularVelocity;
-    }
-
-    // update hexagons
-    for (int i = 0; i < hexagons.size(); i++) {
-        // if next pos will be out of bounds (top or bottom), go other direction
-        if (hexagons[i]->points[4].y() + hexagons[i]->velocity.y > this->height || hexagons[i]->points[1].y() + hexagons[i]->velocity.y < 0) {
-            hexagons[i]->velocity.y *= -1;
-        }
-        // if next pos will be out of bounds (left or right), go other direction
-        if (hexagons[i]->points[3].x() + hexagons[i]->velocity.x > this->width || hexagons[i]->points[0].x() + hexagons[i]->velocity.x < 0) {
-            hexagons[i]->velocity.x *= -1;
-        }
-        hexagons[i]->position += hexagons[i]->velocity;
-        // update points of hexagon
-        for (int j = 0; j < 6; j++)
-        {
-            hexagons[i]->points[j].setX(hexagons[i]->points[j].x() + hexagons[i]->velocity.x);
-            hexagons[i]->points[j].setY(hexagons[i]->points[j].y() + hexagons[i]->velocity.y);
-        }
-        hexagons[i]->rotation += hexagons[i]->angularVelocity;
-
-    }
-          
-    for(int i = 0; i < triangles.size(); i++){
-        Point nextPos = triangles[i]->position + triangles[i]->velocity;
-        if (nextPos.y + triangles[i]->radius > this->height || nextPos.y < 0){
-            triangles[i]->velocity.y *= -1;
-        }
-        if (nextPos.x + triangles[i]->radius > this->width || nextPos.x < 0){
-            triangles[i]->velocity.x *= -1;
-        }
-        triangles[i]->position += triangles[i]->velocity;
-        for (int j = 0; j < 3; j++){
-            triangles[i]->points[j].setX(triangles[i]->points[j].x() + triangles[i]->velocity.x);
-            triangles[i]->points[j].setY(triangles[i]->points[j].y() + triangles[i]->velocity.y);
-
-        }
-        triangles[i]->rotation += triangles[i]->angularVelocity;
     }
   }
 };

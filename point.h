@@ -26,6 +26,13 @@ struct Point {
   const static double euclidianDistance(const Point &p1, const Point &p2) { return p1.euclidianDistance(p2); }
   const static int taxicabDistance(const Point &p1, const Point &p2) { return p1.taxicabDistance(p2); }
   const static int chebyshevDistance(const Point &p1, const Point &p2) { return p1.chebyshevDistance(p2); }
+  const static Point averageOfArray(const Point points[], int count){
+    Point sum = Point(0, 0);
+    for(int i = 0; i < count; i++){
+      sum += points[i];
+    }
+    return sum / count;
+  }
   // is valid, checks in point is in bounds
   const bool isValid(double minX, double maxX, double minY, double maxY) const { return x >= minX && x <= maxX && y >= minY && y <= maxY ? true : false; }
   // returns where the point would be if it was flattened to 1D.
@@ -69,6 +76,7 @@ struct Point {
   
   #ifdef QGLOBAL_H
   explicit operator const QPoint() const { return QPoint(x, y); }
+  explicit operator const QPointF() const {return QPointF(x, y); }
   #endif
 };
 // so the point can be printed to streams
