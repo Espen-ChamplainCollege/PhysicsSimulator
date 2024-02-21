@@ -6,6 +6,7 @@
 #include <QDebug>
 #include <thread>
 #include <unordered_map>
+#include <QtMultimedia/QSoundEffect>
 #include "button.h"
 #include "sphere.h"
 #include "hexagon.h"
@@ -18,6 +19,7 @@ struct Sandbox {
   // this is temporary just to show how the buttons work
   std::vector<Sphere*> spheres;
   std::vector<Hexagon*> hexagons;
+  std::vector<Triangle*> triangles;
 
   Sandbox(int _width, int _height, std::chrono::duration<double, std::milli> _refreshRate) 
     : refreshRate(_refreshRate), width(_width), height(_height){};
@@ -27,7 +29,6 @@ struct Sandbox {
   const inline void stop(){stopped = true;};
   const inline void pause(){paused = true;};
   const inline void unpause(){paused = false;}
-
 
   // Example add sphere function
   void addSphere(){
@@ -52,13 +53,12 @@ struct Sandbox {
           ));
   }
   
-  std::vector<Triangle*> triangles;
   void addTriangle(){
       triangles.push_back(
           new Triangle(Point::randomPoint(21, width - 21, 21, height - 21),
-                       Point::randomPoint(-10, 10, -10, 10),
-                       Color::randomColor(),
-                       20)
+              Point::randomPoint(-10, 10, -10, 10),
+              Color::randomColor(),
+              20)
         );
 
   }
@@ -91,6 +91,11 @@ private:
 
   std::chrono::duration<double, std::milli> refreshRate;
 
+  QSoundEffect soundEffect;
+  soundEffect.setSource(QUrl::fromLocalFile("/PhysicsSimulator/boop.wav"));
+  soundEffect.setVolume(0.5);
+  soundEffect.setLoopCount(1);
+
   const void updateControl(){
     // While not stopped
     while(!stopped){
@@ -115,9 +120,11 @@ private:
       Point nextPos = spheres[i]->position + spheres[i]->velocity;
       if(nextPos.y + spheres[i]->radius > this->height || nextPos.y < 0){
         spheres[i]->velocity.y *= -1;
+        soundEffect.play();
       }
       if(nextPos.x + spheres[i]->radius > this->width || nextPos.x < 0){
         spheres[i]->velocity.x *= -1;
+        soundEffect.play();
       }
       spheres[i]->position += spheres[i]->velocity;
     }
@@ -127,10 +134,12 @@ private:
         // if next pos will be out of bounds (top or bottom), go other direction
         if (hexagons[i]->points[4].y() + hexagons[i]->velocity.y > this->height || hexagons[i]->points[1].y() + hexagons[i]->velocity.y < 0) {
             hexagons[i]->velocity.y *= -1;
+            soundEffect.play();
         }
         // if next pos will be out of bounds (left or right), go other direction
         if (hexagons[i]->points[3].x() + hexagons[i]->velocity.x > this->width || hexagons[i]->points[0].x() + hexagons[i]->velocity.x < 0) {
             hexagons[i]->velocity.x *= -1;
+            soundEffect.play();
         }
         hexagons[i]->position += hexagons[i]->velocity;
         // update points of hexagon
@@ -140,20 +149,22 @@ private:
             hexagons[i]->points[j].setY(hexagons[i]->points[j].y() + hexagons[i]->velocity.y);
         }
     }
-          
+
+    // Update Triangles
     for(int i = 0; i < triangles.size(); i++){
         Point nextPos = triangles[i]->position + triangles[i]->velocity;
         if (nextPos.y + triangles[i]->radius > this->height || nextPos.y < 0){
             triangles[i]->velocity.y *= -1;
+            soundEffect.play();
         }
         if (nextPos.x + triangles[i]->radius > this->width || nextPos.x < 0){
             triangles[i]->velocity.x *= -1;
+            soundEffect.play();
         }
         triangles[i]->position += triangles[i]->velocity;
         for (int j = 0; j < 3; j++){
             triangles[i]->points[j].setX(triangles[i]->points[j].x() + triangles[i]->velocity.x);
             triangles[i]->points[j].setY(triangles[i]->points[j].y() + triangles[i]->velocity.y);
-
         }
     }
   }
