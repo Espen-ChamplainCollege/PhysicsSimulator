@@ -6,7 +6,7 @@
 #include <QDebug>
 #include <thread>
 #include <unordered_map>
-#include <QtMultimedia/QSoundEffect>
+#include <QtMultimedia/QMediaPlayer>
 #include "button.h"
 #include "sphere.h"
 #include "hexagon.h"
@@ -92,7 +92,7 @@ private:
   std::chrono::duration<double, std::milli> refreshRate;
 
   // Setting up sounds
-  QSoundEffect *sound = new QSoundEffect;
+  QMediaPlayer *sound = new QMediaPlayer;
 
   const void updateControl(){
     // While not stopped
@@ -112,8 +112,8 @@ private:
   // Update function is moved here to give us more control.
   // Using the built in QT update timers could restrict us down the line
   const void update(){
-      sound->setSource(QUrl::fromLocalFile("/PhysicsSimulator/boop.wav"));
-      sound->setVolume(0.5);
+      sound->setSource(QUrl::fromLocalFile("./PhysicsSimulator/boop.mp3"));
+      sound->setVolume(5);
       sound->setLoopCount(1);
     // something like, for each shape in shapes, update pos.
     // painting is handled on a different thread so we dont have to worry about that here
@@ -170,11 +170,4 @@ private:
     }
   }
 };
-
-
-
-
-
-
-
 #endif
