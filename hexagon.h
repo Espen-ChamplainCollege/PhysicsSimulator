@@ -4,39 +4,41 @@
 
 #include "point.h"
 #include "color.h"
+#include "shape.h"
+#include "util.h"
 
-struct Hexagon {
-	Point position;
-	Point velocity;
-	// painter.drawPolygon() requires a QPointF
-	QPointF points[6];
-  float rotation;
-  float angularVelocity;
+struct Hexagon : Shape {
 	float width;
-	Color color;
-	Hexagon(const Point& p, const Color& c, float w)
-		: position(p), color(c), width(w)
-	{
-		// 6 vertices are placed in relation to center 'position' point
-		points[0] = QPointF(position.x - w, position.y);
-		points[1] = QPointF(position.x - w / 2, position.y - w * 0.875);
-		points[2] = QPointF(position.x + w / 2, position.y - w * 0.875);
-		points[3] = QPointF(position.x + w, position.y);
-		points[4] = QPointF(position.x + w / 2, position.y + w * 0.875);
-		points[5] = QPointF(position.x - w / 2, position.y + w * 0.875);
+  Hexagon(
+    const Point vertices[6],
+    const Color &color_,
+    const Point &initialVelocity = Point(0, 0),
+    const float &initialRotation = 0,
+    const Point &initialForce = Point(0, 0),
+    const float &initialAngularVelocity = 0,
+    const float &initialTorque = 0
+  ) : Shape(Point::averageOfArray(vertices, 6), 
+            color_, initialVelocity, initialRotation, initialForce,
+            initialAngularVelocity, initialTorque){
 
-	};
-	Hexagon(const Point& p, const Point& v, const Color& c, float w)
-		: position(p), velocity(v), color(c), width(w)
-	{
-		points[0] = QPointF(position.x - w, position.y);
-		points[1] = QPointF(position.x - w / 2, position.y - w * 0.875);
-		points[2] = QPointF(position.x + w / 2, position.y - w * 0.875);
-		points[3] = QPointF(position.x + w, position.y);
-		points[4] = QPointF(position.x + w / 2, position.y + w * 0.875);
-		points[5] = QPointF(position.x - w / 2, position.y + w * 0.875);
-
-	};
+    for(int i = 0; i < 6; i++){
+      verts.push_back(vertices[i]);
+    }
+  }
+  Hexagon(
+    const Point &center,
+    const float width_,
+    const Color &color_,
+    const Point &initialVelocity = Point(0, 0),
+    const float &initialRotation = 0,
+    const Point &initialForce = Point(0, 0),
+    const float &initialAngularVelocity = 0,
+    const float &initialTorque = 0
+  ) : width(width_), Shape(center, 
+            color_, initialVelocity, initialRotation, initialForce,
+            initialAngularVelocity, initialTorque){
+    verts = Util::constructHexagon(center, width);
+  }
 };
 
 
