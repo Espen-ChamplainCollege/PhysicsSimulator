@@ -91,10 +91,8 @@ private:
 
   std::chrono::duration<double, std::milli> refreshRate;
 
-  QSoundEffect soundEffect;
-  soundEffect.setSource(QUrl::fromLocalFile("/PhysicsSimulator/boop.wav"));
-  soundEffect.setVolume(0.5);
-  soundEffect.setLoopCount(1);
+  // Setting up sounds
+  QSoundEffect *sound = new QSoundEffect;
 
   const void updateControl(){
     // While not stopped
@@ -114,17 +112,20 @@ private:
   // Update function is moved here to give us more control.
   // Using the built in QT update timers could restrict us down the line
   const void update(){
+      sound->setSource(QUrl::fromLocalFile("/PhysicsSimulator/boop.wav"));
+      sound->setVolume(0.5);
+      sound->setLoopCount(1);
     // something like, for each shape in shapes, update pos.
     // painting is handled on a different thread so we dont have to worry about that here
     for(int i = 0; i < spheres.size(); i++){
       Point nextPos = spheres[i]->position + spheres[i]->velocity;
       if(nextPos.y + spheres[i]->radius > this->height || nextPos.y < 0){
         spheres[i]->velocity.y *= -1;
-        soundEffect.play();
+        sound->play();
       }
       if(nextPos.x + spheres[i]->radius > this->width || nextPos.x < 0){
         spheres[i]->velocity.x *= -1;
-        soundEffect.play();
+        sound->play();
       }
       spheres[i]->position += spheres[i]->velocity;
     }
@@ -134,12 +135,12 @@ private:
         // if next pos will be out of bounds (top or bottom), go other direction
         if (hexagons[i]->points[4].y() + hexagons[i]->velocity.y > this->height || hexagons[i]->points[1].y() + hexagons[i]->velocity.y < 0) {
             hexagons[i]->velocity.y *= -1;
-            soundEffect.play();
+            sound->play();
         }
         // if next pos will be out of bounds (left or right), go other direction
         if (hexagons[i]->points[3].x() + hexagons[i]->velocity.x > this->width || hexagons[i]->points[0].x() + hexagons[i]->velocity.x < 0) {
             hexagons[i]->velocity.x *= -1;
-            soundEffect.play();
+            sound->play();
         }
         hexagons[i]->position += hexagons[i]->velocity;
         // update points of hexagon
@@ -155,11 +156,11 @@ private:
         Point nextPos = triangles[i]->position + triangles[i]->velocity;
         if (nextPos.y + triangles[i]->radius > this->height || nextPos.y < 0){
             triangles[i]->velocity.y *= -1;
-            soundEffect.play();
+            sound->play();
         }
         if (nextPos.x + triangles[i]->radius > this->width || nextPos.x < 0){
             triangles[i]->velocity.x *= -1;
-            soundEffect.play();
+            sound->play();
         }
         triangles[i]->position += triangles[i]->velocity;
         for (int j = 0; j < 3; j++){
