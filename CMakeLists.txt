@@ -12,8 +12,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS multimedia)
-target_link_libraries(PhysicsSimulator PRIVATE  Qt${QT_VERSION_MAJOR}::Multimedia)
+
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Multimedia)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Multimedia)
 
 set(PROJECT_SOURCES
         main.cpp
@@ -48,6 +49,7 @@ else()
 endif()
 
 target_link_libraries(PhysicsSimulator PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(PhysicsSimulator PRIVATE Qt${QT_VERSION_MAJOR}::Multimedia)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
