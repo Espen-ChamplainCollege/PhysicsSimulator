@@ -15,6 +15,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
   palette.setColor(QPalette::Window, QColor::fromRgb(20, 24, 29));
   this->setAutoFillBackground(true);
   this->setPalette(palette);
+  this->setWindowTitle("Physics");
 
   //sphere = new Sphere(Point(50, 50), Point(2.5, 2.5), Color(255, 255, 255), 25);
   sandbox = new Sandbox(this->width(), this->height(), std::chrono::duration<double, std::milli>(16));
@@ -27,11 +28,27 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 MainWindow::~MainWindow(){
   delete ui;
 }
+void MainWindow::wheelEvent(QWheelEvent *event){
+  cameraScale += ((float)event->angleDelta().y()) / 1000;
+}
+void MainWindow::keyPressEvent(QKeyEvent *event){
+  int hozScrollSpeed = 20;
+  int vertScrollSpeed = 20;
+  if(event->key() == Qt::Key_Left) cameraPos.x += hozScrollSpeed;
+  if(event->key() == Qt::Key_Right) cameraPos.x -= hozScrollSpeed;
+  if(event->key() == Qt::Key_Up) cameraPos.y += vertScrollSpeed;
+  if(event->key() == Qt::Key_Down) cameraPos.y -= vertScrollSpeed;
+
+}
 
 void MainWindow::paintEvent(QPaintEvent *event){
   QPainter painter(this);                         // Make a painter. "this" is the window.
   painter.setRenderHint(QPainter::Antialiasing);  // Turn on antialiasing
+  painter.translate(cameraPos.x, cameraPos.y);
+  painter.scale(cameraScale.x, cameraScale.y);
 
+  painter.setPen(QPen(Qt::white));
+  painter.drawRect(sandbox->position.x, sandbox->position.y, sandbox->width, sandbox->height);
   
   painter.setPen(QPen(Qt::transparent));
   for(int i = 0; i < sandbox->spheres.size(); i++){
@@ -49,22 +66,19 @@ void MainWindow::paintEvent(QPaintEvent *event){
   // 2. center the transform on the object
   // 3. rotate the transform
   // 4. uncenter the transform on the object
-  //
-  //
+
+
   for(int i = 0; i < sandbox->shapes.size(); i++){
     Shape *s = sandbox->shapes[i];
 
     painter.setBrush(QColor(s->color));
-    painter.resetTransform();
-    painter.translate(QPointF(s->position));
-    painter.rotate(s->rotation);
-    painter.translate(-QPointF(s->position));
     painter.drawPolygon(Util::convertPointVector(s->verts), s->verts.size());
   }
   
-  painter.resetTransform();
+  //painter.resetTransform();
 
   // We draw the buttons/UI second because it needs to be on top.
+  painter.resetTransform();
   painter.setPen(QPen(Qt::white));
   painter.setBrush(QColor::fromRgb(20, 24, 29));
   QBrush b(palette().window());
