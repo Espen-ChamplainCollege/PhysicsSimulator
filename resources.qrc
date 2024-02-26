@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/sounds">
+        <file>boop.wav</file>
+        <file>boop.mp3</file>
+    </qresource>
+</RCC>
