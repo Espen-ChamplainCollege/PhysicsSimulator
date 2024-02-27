@@ -11,8 +11,11 @@
 #include "sphere.h"
 #include "hexagon.h"
 #include "triangle.h"
+#include "util.h"
 
 struct Sandbox {
+  int width, height;
+  Point position;
   // std::vector<Shape> shapes <- We should have a parent class _Shape_
   // that all of our shapes inherit from, or something like that.
   std::unordered_map<Button, void(Sandbox::*)(void)> buttons;
@@ -21,8 +24,8 @@ struct Sandbox {
   std::vector<Hexagon*> hexagons;
   std::vector<Shape*> shapes;
 
-  Sandbox(int _width, int _height, std::chrono::duration<double, std::milli> _refreshRate) 
-    : refreshRate(_refreshRate), width(_width), height(_height){};
+  Sandbox(int _width, int _height, std::chrono::duration<double, std::milli> _refreshRate, const Point &p = Point(0, 0)) 
+    : refreshRate(_refreshRate), width(_width), height(_height), position(p){};
   ~Sandbox();
 
   std::thread start(){return std::thread(&Sandbox::updateControl, this);};
@@ -55,7 +58,7 @@ struct Sandbox {
         Point::randomPoint(-10, 10, -10, 10),
         0,
         Point(0, 0),
-        Util::generalRandom(-15, 15) 
+        Util::generalRandom(-5, 5) 
       ));
   }
   
@@ -69,7 +72,7 @@ struct Sandbox {
         Point::randomPoint(-10, 10, -10, 10),
         0,
         Point(0, 0),
-        Util::generalRandom(-15, 15) 
+        Util::generalRandom(-5, 5) 
       ));
 
   }
@@ -104,7 +107,6 @@ struct Sandbox {
 private:
   bool paused = false;
   bool stopped = false;
-  int width, height;
 
   std::chrono::duration<double, std::milli> refreshRate;
 
@@ -146,6 +148,7 @@ private:
           xchange = true;
         }
       }
+      float prevRotation = shapes[i]->rotation;
       shapes[i]->rotation += shapes[i]->angularVelocity;
       Point oldPosition = shapes[i]->position;
       shapes[i]->position += shapes[i]->velocity;
@@ -153,6 +156,7 @@ private:
         Point diff = shapes[i]->verts[k] - oldPosition;
         shapes[i]->verts[k] = shapes[i]->position + diff;
       }
+      Util::rotatePoints(shapes[i]->position, shapes[i]->rotation - prevRotation, shapes[i]->verts);
     }
   }
 };

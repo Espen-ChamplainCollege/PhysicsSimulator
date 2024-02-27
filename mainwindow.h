@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <qevent.h>
 #include <qwidget.h>
 #include "sandbox.h"
 
@@ -20,9 +21,13 @@ protected:
   void paintEvent(QPaintEvent *event) override;
   void mouseReleaseEvent(QMouseEvent *event) override;
   void timerEvent(QTimerEvent *event) override;
+  void keyPressEvent(QKeyEvent *event) override;
+  void wheelEvent(QWheelEvent *event) override;
 private:
   Ui::MainWindow *ui;
   Sandbox *sandbox;
+  Point cameraPos = Point(0, 0);
+  Point cameraScale = Point(1, 1);
 };
 
 #endif // MAINWINDOW_H
