@@ -21,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
   sandbox = new Sandbox(this->width(), this->height(), std::chrono::duration<double, std::milli>(16));
   sandbox->addButtons();
   
-  sandbox->start().detach();
+  sandbox->start(this).detach();
   this->startTimer(16);
 }
 

@@ -2,15 +2,19 @@
 #define SANDBOX_H
 
 #include <chrono>
+#include <qsoundeffect.h>
 #include <ratio>
 #include <QDebug>
 #include <thread>
 #include <unordered_map>
-#include <QSoundEffect>
 #include "button.h"
 #include "sphere.h"
 #include "hexagon.h"
 #include "triangle.h"
+
+#include <QMediaPlayer>
+#include <QAudioOutput>
+#include <QThread>
 
 struct Sandbox {
   // std::vector<Shape> shapes <- We should have a parent class _Shape_
@@ -25,7 +29,16 @@ struct Sandbox {
     : refreshRate(_refreshRate), width(_width), height(_height){};
   ~Sandbox();
 
-  std::thread start(){return std::thread(&Sandbox::updateControl, this);};
+  std::thread start(QObject *parent){
+    mediaPlayer = new QMediaPlayer;
+    audioOutput = new QAudioOutput;
+    mediaPlayer->setAudioOutput(audioOutput);
+    mediaPlayer->setSource(QUrl::fromLocalFile("../boop.wav"));
+    audioOutput->setVolume(50);
+    audioOutput->setParent(parent);
+    mediaPlayer->setParent(parent);
+    return std::thread(&Sandbox::updateControl, this);
+  };
   const inline void stop(){stopped = true;};
   const inline void pause(){paused = true;};
   const inline void unpause(){paused = false;}
@@ -92,7 +105,8 @@ private:
   std::chrono::duration<double, std::milli> refreshRate;
 
   // Setting up sounds
-  QSoundEffect sound;
+  QMediaPlayer *mediaPlayer;
+  QAudioOutput *audioOutput;
 
   const void updateControl(){
     // While not stopped
@@ -112,20 +126,17 @@ private:
   // Update function is moved here to give us more control.
   // Using the built in QT update timers could restrict us down the line
   const void update(){
-      sound.setSource(QUrl::fromLocalFile("qrc:/sounds/boop.wav"));
-      sound.setLoopCount(0);
-      sound.setVolume(0.75);
     // something like, for each shape in shapes, update pos.
     // painting is handled on a different thread so we dont have to worry about that here
     for(int i = 0; i < spheres.size(); i++){
       Point nextPos = spheres[i]->position + spheres[i]->velocity;
       if(nextPos.y + spheres[i]->radius > this->height || nextPos.y < 0){
         spheres[i]->velocity.y *= -1;
-        sound.play();
+        mediaPlayer->play();
       }
       if(nextPos.x + spheres[i]->radius > this->width || nextPos.x < 0){
         spheres[i]->velocity.x *= -1;
-        sound.play();
+        mediaPlayer->play();
       }
       spheres[i]->position += spheres[i]->velocity;
     }
@@ -135,12 +146,12 @@ private:
         // if next pos will be out of bounds (top or bottom), go other direction
         if (hexagons[i]->points[4].y() + hexagons[i]->velocity.y > this->height || hexagons[i]->points[1].y() + hexagons[i]->velocity.y < 0) {
             hexagons[i]->velocity.y *= -1;
-            sound.play();
+            mediaPlayer->play();
         }
         // if next pos will be out of bounds (left or right), go other direction
         if (hexagons[i]->points[3].x() + hexagons[i]->velocity.x > this->width || hexagons[i]->points[0].x() + hexagons[i]->velocity.x < 0) {
             hexagons[i]->velocity.x *= -1;
-            sound.play();
+            mediaPlayer->play();
         }
         hexagons[i]->position += hexagons[i]->velocity;
         // update points of hexagon
@@ -156,11 +167,11 @@ private:
         Point nextPos = triangles[i]->position + triangles[i]->velocity;
         if (nextPos.y + triangles[i]->radius > this->height || nextPos.y < 0){
             triangles[i]->velocity.y *= -1;
-            sound.play();
+            mediaPlayer->play();
         }
         if (nextPos.x + triangles[i]->radius > this->width || nextPos.x < 0){
             triangles[i]->velocity.x *= -1;
-            sound.play();
+            mediaPlayer->play();
         }
         triangles[i]->position += triangles[i]->velocity;
         for (int j = 0; j < 3; j++){
