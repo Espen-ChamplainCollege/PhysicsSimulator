@@ -4,6 +4,8 @@
 #include <chrono>
 #include <ratio>
 #include <QDebug>
+#include <QMediaPlayer>
+#include <QAudioOutput>
 #include <thread>
 #include <unordered_map>
 #include "gui/button.h"
@@ -28,7 +30,16 @@ struct Sandbox {
     : refreshRate(_refreshRate), width(_width), height(_height), position(p){};
     ~Sandbox();
 
-    std::thread start(){return std::thread(&Sandbox::updateControl, this);};
+    QMediaPlayer *mediaPlayer;
+    QAudioOutput *audioOutput;
+    std::thread start(){
+      mediaPlayer = new QMediaPlayer;
+      audioOutput = new QAudioOutput;
+      mediaPlayer->setAudioOutput(audioOutput);
+      mediaPlayer->setSource(QUrl::fromLocalFile("../boop.wav"));
+      audioOutput->setVolume(50);
+      return std::thread(&Sandbox::updateControl, this);
+    };
     const inline void stop(){stopped = true;};
     const inline void pause(){paused = true;};
     const inline void unpause(){paused = false;}
@@ -140,11 +151,13 @@ private:
                     shapes[i]->verts[k].y + shapes[i]->velocity.y < 0)){
                         shapes[i]->velocity.y *= -1;
                         ychange = true;
+                        mediaPlayer->play();
                 }
                 if(!xchange && (shapes[i]->verts[k].x + shapes[i]->velocity.x > this->width ||
                     shapes[i]->verts[k].x + shapes[i]->velocity.x < 0)){
                         shapes[i]->velocity.x *= -1;
                         xchange = true;
+                        mediaPlayer->play();
                 }
             }
             float prevRotation = shapes[i]->rotation;
