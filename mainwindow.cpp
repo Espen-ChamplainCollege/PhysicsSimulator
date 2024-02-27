@@ -18,7 +18,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
   //sphere = new Sphere(Point(50, 50), Point(2.5, 2.5), Color(255, 255, 255), 25);
   sandbox = new Sandbox(this->width(), this->height(), std::chrono::duration<double, std::milli>(16));
-  sandbox->addButtons();
+  sandbox->menuButton();
   
   sandbox->start().detach();
   this->startTimer(16);
