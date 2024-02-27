@@ -16,19 +16,25 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 find_package(Qt6 REQUIRED COMPONENTS Multimedia)
 
 set(PROJECT_SOURCES
-        main.cpp
-        mainwindow.cpp
-        mainwindow.h
-        mainwindow.ui
+        application/main.cpp
+        application/mainwindow.h
+        application/mainwindow.cpp
+        application/mainwindow.ui
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(PhysicsSimulator
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
-        triangle.h
-        sandbox.h
-        resources.qrc
+        lib/gui/button.h
+        lib/objects/hexagon.h
+        lib/objects/shape.h
+        lib/objects/triangle.h
+        lib/objects/sphere.h
+        bin/color.h
+        bin/point.h
+        bin/util.h
+        lib/sandbox.h
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET PhysicsSimulator APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
