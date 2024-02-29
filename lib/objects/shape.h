@@ -11,6 +11,7 @@ struct Shape {
     Point force;
     float torque;
     float mass;
+    float inertiaTensor;
     float rotation;
     float angularVelocity;
     Color color;
