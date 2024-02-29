@@ -12,14 +12,16 @@ struct Hexagon : Shape {
     Hexagon(
         const Point vertices[6],
         const Color &color_,
+        const float &mass_,
         const Point &initialVelocity = Point(0, 0),
         const float &initialRotation = 0,
         const Point &initialForce = Point(0, 0),
         const float &initialAngularVelocity = 0,
-        const float &initialTorque = 0
+        const float &initialTorque = 0,
+        const float &initialInertiaTensor = 1
         ) : Shape(Point::averageOfArray(vertices, 6),
-            color_, initialVelocity, initialRotation, initialForce,
-            initialAngularVelocity, initialTorque){
+            color_, mass_, initialVelocity, initialRotation, initialForce,
+            initialAngularVelocity, initialTorque, initialInertiaTensor){
 
             for(int i = 0; i < 6; i++){
             verts.push_back(vertices[i]);
@@ -27,16 +29,18 @@ struct Hexagon : Shape {
     }
     Hexagon(
         const Point &center,
-        const float width_,
+        const float &width_,
         const Color &color_,
+        const float &mass_,
         const Point &initialVelocity = Point(0, 0),
         const float &initialRotation = 0,
         const Point &initialForce = Point(0, 0),
         const float &initialAngularVelocity = 0,
-        const float &initialTorque = 0
+        const float &initialTorque = 0,
+        const float &initialInertiaTensor = 1
         ) : width(width_), Shape(center,
-            color_, initialVelocity, initialRotation, initialForce,
-            initialAngularVelocity, initialTorque){
+            color_, mass_, initialVelocity, initialRotation, initialForce,
+            initialAngularVelocity, initialTorque, initialInertiaTensor){
             verts = Util::constructHexagon(center, width);
             }
 };
