@@ -4,8 +4,6 @@
 #include <chrono>
 #include <ratio>
 #include <QDebug>
-#include <QMediaPlayer>
-#include <QAudioOutput>
 #include <thread>
 #include <unordered_map>
 #include "gui/button.h"
@@ -13,7 +11,9 @@
 #include "objects/sphere.h"
 #include "objects/hexagon.h"
 #include "objects/triangle.h"
+#include "objects/userShape.h"
 #include "../bin/util.h"
+#include "QCoreApplication"
 
 struct Sandbox {
     int width, height;
@@ -25,19 +25,14 @@ struct Sandbox {
     std::vector<Sphere*> spheres;
     std::vector<Hexagon*> hexagons;
     std::vector<Shape*> shapes;
+    std::vector<UserShape*> userShapes;
 
     Sandbox(int _width, int _height, std::chrono::duration<double, std::milli> _refreshRate, const Point &p = Point(0, 0))
     : refreshRate(_refreshRate), width(_width), height(_height), position(p){};
     ~Sandbox();
 
-    QMediaPlayer *mediaPlayer;
-    QAudioOutput *audioOutput;
+
     std::thread start(){
-      mediaPlayer = new QMediaPlayer;
-      audioOutput = new QAudioOutput;
-      mediaPlayer->setAudioOutput(audioOutput);
-      mediaPlayer->setSource(QUrl::fromLocalFile("../boop.wav"));
-      audioOutput->setVolume(50);
       return std::thread(&Sandbox::updateControl, this);
     };
     const inline void stop(){stopped = true;};
@@ -56,6 +51,62 @@ struct Sandbox {
     ));
     spheres[spheres.size() - 1]->angularVelocity = Point::randomPoint(-10, 10, -10, 10).x;
     // ^ this is lazy, will fix later
+    }
+
+    bool checkMouseClick = false;
+    std::vector<Point> userShapePoints;
+    int numOfVerts = 5;
+    void addUserShape() {
+        qDebug() << "button clicked";
+        checkMouseClick = true;
+        while (userShapePoints.size() < numOfVerts) {
+            qDebug() << "waiting for clicks";
+            qDebug() << userShapePoints.size();
+            QCoreApplication::processEvents();
+            continue;
+        }
+        qDebug() << "Received clicks";
+        float shapeWidthMin = 0;
+        float shapeHeightMin = 0;
+        float shapeWidthMax = 0;
+        float shapeHeightMax = 0;
+        for (int i = 0; i < userShapePoints.size(); i++)
+        {
+            if (userShapePoints[i].x < shapeWidthMin) {
+                shapeWidthMin = userShapePoints[i].x;
+            }
+            if (userShapePoints[i].x > shapeWidthMax) {
+                shapeWidthMax = userShapePoints[i].x;
+            }
+            if (userShapePoints[i].y < shapeHeightMin) {
+                shapeHeightMin = userShapePoints[i].y;
+            }
+            if (userShapePoints[i].y > shapeHeightMax) {
+                shapeHeightMax = userShapePoints[i].y;
+            }
+        }
+        float shapeWidth = (shapeWidthMax - shapeWidthMin) / 2;
+        float shapeHeight = (shapeHeightMax - shapeHeightMin) / 2;
+        // if width or height are too big, scale down to a max size that doesn't cause the shape to go oob
+        qDebug() << "Width: " << shapeWidth;
+        qDebug() << "Height: " << shapeHeight;
+        qDebug() << "Center: " << Point::averageOfVector(userShapePoints).x << " " << Point::averageOfVector(userShapePoints).y;
+        for (int i = 0; i < userShapePoints.size(); i++) {
+            qDebug() << "Point " << i << ": " << userShapePoints[i].x << " " << userShapePoints[i].y;
+        }
+        shapes.push_back(
+            new UserShape(Point::averageOfVector(userShapePoints),
+                shapeWidth,
+                Color::randomColor(),
+                userShapePoints,
+                Point::randomPoint(-10, 10, -10, 10),
+                0,
+                Point(0, 0),
+                Util::generalRandom(-5, 5)
+            ));
+        qDebug() << "Added to shapes";
+        checkMouseClick = false;
+        userShapePoints.clear();
     }
   
     // Example add hexagon function
@@ -100,7 +151,9 @@ struct Sandbox {
         buttons[Button(Point((float)width / 2 - 210, height - 75), 80, 50, "Triangle")]
             = &Sandbox::addTriangle;
         buttons[Button(Point((float)width / 2 + 315, height - 75), 80, 50, "Clear")]
-        = &Sandbox::clearScreen;
+            = &Sandbox::clearScreen;
+        buttons[Button(Point((float)width / 2 - 380, height - 75), 150, 50, "Custom (Click 5 times)")]
+            = &Sandbox::addUserShape;
     }
     const void tryClickButtons(const Point &pos){
         for(auto i = buttons.begin(); i != buttons.end(); i++){
@@ -151,13 +204,11 @@ private:
                     shapes[i]->verts[k].y + shapes[i]->velocity.y < 0)){
                         shapes[i]->velocity.y *= -1;
                         ychange = true;
-                        mediaPlayer->play();
                 }
                 if(!xchange && (shapes[i]->verts[k].x + shapes[i]->velocity.x > this->width ||
                     shapes[i]->verts[k].x + shapes[i]->velocity.x < 0)){
                         shapes[i]->velocity.x *= -1;
                         xchange = true;
-                        mediaPlayer->play();
                 }
             }
             float prevRotation = shapes[i]->rotation;

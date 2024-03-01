@@ -108,4 +108,14 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event){
     sandbox->tryClickButtons(event->pos());
 }
 
+void MainWindow::mousePressEvent(QMouseEvent* event) {
+    qDebug() << "checkMouseClick: " << sandbox->checkMouseClick;
+    qDebug() << "points size: " << sandbox->userShapePoints.size();
+    if ((sandbox->checkMouseClick) && (sandbox->userShapePoints.size() < sandbox->numOfVerts)) {
+        qDebug() << "entered mouse press if statement";
+        Point mousePos = QWidget::mapFromGlobal(QCursor::pos());
+        sandbox->userShapePoints.push_back(mousePos);
+    }
+}
+
 void MainWindow::timerEvent(QTimerEvent *event) { repaint(); }
