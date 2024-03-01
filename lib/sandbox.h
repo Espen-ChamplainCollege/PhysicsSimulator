@@ -14,7 +14,6 @@
 #include "objects/hexagon.h"
 #include "objects/triangle.h"
 #include "../bin/util.h"
-#include <iostream>
 
 #define DEBUG_MODE false
 
@@ -97,7 +96,7 @@ struct Sandbox {
         buttons[Button(Point((float)width / 2 - 210, height - 75), 80, 50, "Triangle")]
             = &Sandbox::addTriangle;
         buttons[Button(Point((float)width / 2 + 315, height - 75), 80, 50, "Clear")]
-        = &Sandbox::clearScreen;
+            = &Sandbox::clearScreen;
     }
     const void tryClickButtons(const Point &pos){
         for(auto i = buttons.begin(); i != buttons.end(); i++){
@@ -114,6 +113,7 @@ struct Sandbox {
 
     bool paused = false;
 private:
+    bool gravityEnabled = true;
     bool stopped = false;
     const Point gravity = Point(0, 9.8);
 
@@ -160,6 +160,7 @@ private:
         }
 
         
+        // Temporary until we have the colliders:
         std::vector<Shape*> toRemove;
         for(int i = 0; i < shapes.size(); i++){
           if(shapes[i]->position.y > this->height) toRemove.push_back(shapes[i]);

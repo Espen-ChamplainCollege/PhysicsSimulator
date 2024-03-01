@@ -57,7 +57,7 @@ const static void rotatePoints(const Point &center, float rotation, std::vector<
 }
 const static void realignPoints(std::vector<Point> &points, const Point &oldCenter, const Point &newCenter){
   for(int i = 0; i < points.size(); i++){
-    Point offset = oldCenter - points[i];
+    Point offset = points[i] - oldCenter;
     points[i] = newCenter + offset;
   }
 }
