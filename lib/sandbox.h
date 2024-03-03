@@ -55,19 +55,18 @@ struct Sandbox {
     // ^ this is lazy, will fix later
     }
 
+
     bool checkMouseClick = false;
     std::vector<Point> userShapePoints;
-    int numOfVerts = 5;
+    int userShapeVerts = 5;
+
     void addUserShape() {
-        qDebug() << "button clicked";
         checkMouseClick = true;
-        while (userShapePoints.size() < numOfVerts) {
-            qDebug() << "waiting for clicks";
-            qDebug() << userShapePoints.size();
+        // get mouse clicks
+        while (userShapePoints.size() < userShapeVerts) {
             QCoreApplication::processEvents();
             continue;
         }
-        qDebug() << "Received clicks";
         float shapeWidthMin = 0;
         float shapeHeightMin = 0;
         float shapeWidthMax = 0;
@@ -89,13 +88,6 @@ struct Sandbox {
         }
         float shapeWidth = (shapeWidthMax - shapeWidthMin) / 2;
         float shapeHeight = (shapeHeightMax - shapeHeightMin) / 2;
-        // if width or height are too big, scale down to a max size that doesn't cause the shape to go oob
-        qDebug() << "Width: " << shapeWidth;
-        qDebug() << "Height: " << shapeHeight;
-        qDebug() << "Center: " << Point::averageOfVector(userShapePoints).x << " " << Point::averageOfVector(userShapePoints).y;
-        for (int i = 0; i < userShapePoints.size(); i++) {
-            qDebug() << "Point " << i << ": " << userShapePoints[i].x << " " << userShapePoints[i].y;
-        }
         shapes.push_back(
             new UserShape(Point::averageOfVector(userShapePoints),
                 shapeWidth,
@@ -103,7 +95,6 @@ struct Sandbox {
                 1,
                 userShapePoints
             ));
-        qDebug() << "Added to shapes";
         checkMouseClick = false;
         userShapePoints.clear();
     }

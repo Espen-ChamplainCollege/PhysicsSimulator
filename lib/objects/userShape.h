@@ -43,12 +43,8 @@ struct UserShape : Shape {
         const float& initialInertiaTensor = 1
         ) : width(width_), Shape(center,
             color_, mass_, initialVelocity, initialRotation, initialForce,
-            initialAngularVelocity, initialTorque, initialInertiaTensor) {
-            // IMPLEMENT !
-            //verts = Util::constructUserShape(center, width);
-            qDebug() << "In userShape constructor";
+            initialAngularVelocity, initialTorque, initialInertiaTensor){
             verts = vertices;
-            qDebug() << "Leaving userShape constructor";
     }
 };
 
