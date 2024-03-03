@@ -37,6 +37,8 @@ void MainWindow::keyPressEvent(QKeyEvent *event){
     if(event->key() == Qt::Key_Up) cameraPos.y += vertScrollSpeed;
     if(event->key() == Qt::Key_Down) cameraPos.y -= vertScrollSpeed;
 
+    if(event->key() == Qt::Key_Tab) sandbox->paused = !sandbox->paused;
+
 }
 
 void MainWindow::paintEvent(QPaintEvent *event){

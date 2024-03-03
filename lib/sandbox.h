@@ -15,6 +15,8 @@
 #include "objects/triangle.h"
 #include "../bin/util.h"
 
+#define DEBUG_MODE false
+
 struct Sandbox {
     int width, height;
     Point position;
@@ -66,10 +68,7 @@ struct Sandbox {
         new Hexagon(Point::randomPoint(hexWidth + 1, width - (hexWidth + 1), hexWidth + 1, height - (hexWidth + 1)),
             hexWidth,
             Color::randomColor(),
-            Point::randomPoint(-10, 10, -10, 10),
-            0,
-            Point(0, 0),
-            Util::generalRandom(-5, 5)
+            1
         ));
     }
   
@@ -80,10 +79,7 @@ struct Sandbox {
             new Triangle(Point::randomPoint(triLen + 1, width - (triLen + 1), triLen + 1, height - (triLen + 1)),
                 triLen,
                 Color::randomColor(),
-                Point::randomPoint(-10, 10, -10, 10),
-                0,
-                Point(0, 0),
-                Util::generalRandom(-5, 5)
+                1
           ));
 
     }
@@ -100,7 +96,7 @@ struct Sandbox {
         buttons[Button(Point((float)width / 2 - 210, height - 75), 80, 50, "Triangle")]
             = &Sandbox::addTriangle;
         buttons[Button(Point((float)width / 2 + 315, height - 75), 80, 50, "Clear")]
-        = &Sandbox::clearScreen;
+            = &Sandbox::clearScreen;
     }
     const void tryClickButtons(const Point &pos){
         for(auto i = buttons.begin(); i != buttons.end(); i++){
@@ -114,62 +110,68 @@ struct Sandbox {
         }
     }
 
-private:
+
     bool paused = false;
+private:
+    bool gravityEnabled = true;
     bool stopped = false;
+    const Point gravity = Point(0, 9.8);
 
     std::chrono::duration<double, std::milli> refreshRate;
 
     const void updateControl(){
         // While not stopped
+        double timeStep = 1.0 / 60.0;
         while(!stopped){
             // Record the time we start to update
             auto updateStart = std::chrono::high_resolution_clock::now();
-            update();
+            update(timeStep);
             // The duration is the end time - the start time.
             std::chrono::duration<double, std::milli> duration =
                 (std::chrono::high_resolution_clock::now() - updateStart);
             // if the duration was less than our refresh rate, sleep for a bit.
             // (if we dont do this, simulation will be literally faster on faster machines)
             if(duration < refreshRate) std::this_thread::sleep_for(refreshRate - duration);
+            #if DEBUG_MODE
+              paused = true;
+            #endif // DEBUG_MODE
             while(paused){}
+            
         }
     }
     // Update function is moved here to give us more control.
     // Using the built in QT update timers could restrict us down the line
-    const void update(){
+    const void update(double time){
         // something like, for each shape in shapes, update pos.
         // painting is handled on a different thread so we dont have to worry about that here
 
-
-        // this is very slow like O(n^2) with n being the amount of vertices.
         for(int i = 0; i < shapes.size(); i++){
-            bool ychange = false, xchange = false;
-            for(int k = 0; k < shapes[i]->verts.size(); k++){
-                if(ychange && xchange) break;
-                if(!ychange && (shapes[i]->verts[k].y + shapes[i]->velocity.y > this->height ||
-                    shapes[i]->verts[k].y + shapes[i]->velocity.y < 0)){
-                        shapes[i]->velocity.y *= -1;
-                        ychange = true;
-                        mediaPlayer->play();
-                }
-                if(!xchange && (shapes[i]->verts[k].x + shapes[i]->velocity.x > this->width ||
-                    shapes[i]->verts[k].x + shapes[i]->velocity.x < 0)){
-                        shapes[i]->velocity.x *= -1;
-                        xchange = true;
-                        mediaPlayer->play();
-                }
-            }
+            Point prevPosition = shapes[i]->position;
             float prevRotation = shapes[i]->rotation;
-            shapes[i]->rotation += shapes[i]->angularVelocity;
-            Point oldPosition = shapes[i]->position;
+            shapes[i]->velocity += (gravity + shapes[i]->force * (1 / shapes[i]->mass)) * time;
+            shapes[i]->angularVelocity += (shapes[i]->torque * (1 / shapes[i]->inertiaTensor)) * time;
             shapes[i]->position += shapes[i]->velocity;
-            for(int k = 0; k < shapes[i]->verts.size(); k++){
-                Point diff = shapes[i]->verts[k] - oldPosition;
-                shapes[i]->verts[k] = shapes[i]->position + diff;
-            }
+            shapes[i]->rotation += shapes[i]->angularVelocity;
+            shapes[i]->force = Point(0, 0);
+            shapes[i]->torque = 0;
+
+            Util::realignPoints(shapes[i]->verts, prevPosition, shapes[i]->position);      
             Util::rotatePoints(shapes[i]->position, shapes[i]->rotation - prevRotation, shapes[i]->verts);
         }
+
+        
+        // Temporary until we have the colliders:
+        std::vector<Shape*> toRemove;
+        for(int i = 0; i < shapes.size(); i++){
+          if(shapes[i]->position.y > this->height) toRemove.push_back(shapes[i]);
+        }
+        for(int i = 0; i < toRemove.size(); i++){
+          for(int k = 0; k < shapes.size(); k++){
+            if(shapes[k] == toRemove[i]) shapes.erase(shapes.begin() + k);
+            break;
+          }
+        }
+        toRemove.clear();
     }
 };
 
