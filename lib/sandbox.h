@@ -4,8 +4,6 @@
 #include <chrono>
 #include <ratio>
 #include <QDebug>
-#include <QMediaPlayer>
-#include <QAudioOutput>
 #include <thread>
 #include <unordered_map>
 #include "gui/button.h"
@@ -13,7 +11,9 @@
 #include "objects/sphere.h"
 #include "objects/hexagon.h"
 #include "objects/triangle.h"
+#include "objects/userShape.h"
 #include "../bin/util.h"
+#include "QCoreApplication"
 
 #define DEBUG_MODE false
 
@@ -27,19 +27,14 @@ struct Sandbox {
     std::vector<Sphere*> spheres;
     std::vector<Hexagon*> hexagons;
     std::vector<Shape*> shapes;
+    std::vector<UserShape*> userShapes;
 
     Sandbox(int _width, int _height, std::chrono::duration<double, std::milli> _refreshRate, const Point &p = Point(0, 0))
     : refreshRate(_refreshRate), width(_width), height(_height), position(p){};
     ~Sandbox();
 
-    QMediaPlayer *mediaPlayer;
-    QAudioOutput *audioOutput;
+
     std::thread start(){
-      mediaPlayer = new QMediaPlayer;
-      audioOutput = new QAudioOutput;
-      mediaPlayer->setAudioOutput(audioOutput);
-      mediaPlayer->setSource(QUrl::fromLocalFile("../boop.wav"));
-      audioOutput->setVolume(50);
       return std::thread(&Sandbox::updateControl, this);
     };
     const inline void stop(){stopped = true;};
@@ -58,6 +53,50 @@ struct Sandbox {
     ));
     spheres[spheres.size() - 1]->angularVelocity = Point::randomPoint(-10, 10, -10, 10).x;
     // ^ this is lazy, will fix later
+    }
+
+
+    bool checkMouseClick = false;
+    std::vector<Point> userShapePoints;
+    int userShapeVerts = 5;
+
+    void addUserShape() {
+        checkMouseClick = true;
+        // get mouse clicks
+        while (userShapePoints.size() < userShapeVerts) {
+            QCoreApplication::processEvents();
+            continue;
+        }
+        float shapeWidthMin = 0;
+        float shapeHeightMin = 0;
+        float shapeWidthMax = 0;
+        float shapeHeightMax = 0;
+        for (int i = 0; i < userShapePoints.size(); i++)
+        {
+            if (userShapePoints[i].x < shapeWidthMin) {
+                shapeWidthMin = userShapePoints[i].x;
+            }
+            if (userShapePoints[i].x > shapeWidthMax) {
+                shapeWidthMax = userShapePoints[i].x;
+            }
+            if (userShapePoints[i].y < shapeHeightMin) {
+                shapeHeightMin = userShapePoints[i].y;
+            }
+            if (userShapePoints[i].y > shapeHeightMax) {
+                shapeHeightMax = userShapePoints[i].y;
+            }
+        }
+        float shapeWidth = (shapeWidthMax - shapeWidthMin) / 2;
+        float shapeHeight = (shapeHeightMax - shapeHeightMin) / 2;
+        shapes.push_back(
+            new UserShape(Point::averageOfVector(userShapePoints),
+                shapeWidth,
+                Color::randomColor(),
+                1,
+                userShapePoints
+            ));
+        checkMouseClick = false;
+        userShapePoints.clear();
     }
   
     // Example add hexagon function
@@ -97,6 +136,8 @@ struct Sandbox {
             = &Sandbox::addTriangle;
         buttons[Button(Point((float)width / 2 + 315, height - 75), 80, 50, "Clear")]
             = &Sandbox::clearScreen;
+        buttons[Button(Point((float)width / 2 - 380, height - 75), 150, 50, "Custom (Click 5 times)")]
+            = &Sandbox::addUserShape;
     }
     const void tryClickButtons(const Point &pos){
         for(auto i = buttons.begin(); i != buttons.end(); i++){
