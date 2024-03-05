@@ -33,13 +33,6 @@ struct Point {
         }
         return sum / count;
     }
-    const static Point averageOfVector(std::vector<Point> points) {
-        Point sum = Point(0, 0);
-        for (int i = 0; i < points.size(); i++) {
-            sum += points[i];
-        }
-        return sum / points.size();
-    }
     // is valid, checks in point is in bounds
     const bool isValid(double minX, double maxX, double minY, double maxY) const { return x >= minX && x <= maxX && y >= minY && y <= maxY ? true : false; }
     // returns where the point would be if it was flattened to 1D.
