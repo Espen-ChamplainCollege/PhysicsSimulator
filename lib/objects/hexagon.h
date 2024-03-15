@@ -17,15 +17,15 @@ struct Hexagon : Shape {
         const float &initialRotation = 0,
         const Point &initialForce = Point(0, 0),
         const float &initialAngularVelocity = 0,
-        const float &initialTorque = 0,
-        const float &initialInertiaTensor = 1
+        const float &initialTorque = 0
         ) : Shape(Point::averageOfArray(vertices, 6),
             color_, mass_, initialVelocity, initialRotation, initialForce,
-            initialAngularVelocity, initialTorque, initialInertiaTensor){
+            initialAngularVelocity, initialTorque){
 
             for(int i = 0; i < 6; i++){
-            verts.push_back(vertices[i]);
+                verts.push_back(vertices[i]);
             }
+            finalize();
     }
     Hexagon(
         const Point &center,
@@ -36,12 +36,12 @@ struct Hexagon : Shape {
         const float &initialRotation = 0,
         const Point &initialForce = Point(0, 0),
         const float &initialAngularVelocity = 0,
-        const float &initialTorque = 0,
-        const float &initialInertiaTensor = 1
+        const float &initialTorque = 0
         ) : width(width_), Shape(center,
             color_, mass_, initialVelocity, initialRotation, initialForce,
-            initialAngularVelocity, initialTorque, initialInertiaTensor){
-            verts = Util::constructHexagon(center, width);
+            initialAngularVelocity, initialTorque){
+                verts = Util::constructHexagon(center, width);
+                finalize();
             }
 };
 
