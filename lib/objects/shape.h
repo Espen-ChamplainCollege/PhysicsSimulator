@@ -4,6 +4,7 @@
 #include "../../bin/point.h"
 #include "../../bin/color.h"
 #include "../../bin/util.h"
+#include "../physics/boundingrect.h"
 #include <vector>
 #include <iostream>
 
@@ -22,6 +23,7 @@ struct Shape {
     std::vector<Point> verts;
     bool isStatic = false;
     std::vector<std::vector<Point>> triangles;
+    BoundingRect *boundingRect;
     Shape(
         const Point &position_,
         const Color &color_,
