@@ -3,6 +3,7 @@
 
 #include "../../bin/point.h"
 #include "../../bin/color.h"
+#include "../../bin/util.h"
 #include <vector>
 #include <iostream>
 
