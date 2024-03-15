@@ -12,6 +12,7 @@
 #include "objects/hexagon.h"
 #include "objects/triangle.h"
 #include "objects/userShape.h"
+#include "objects/square.h"
 #include "../bin/util.h"
 #include "QCoreApplication"
 
@@ -129,6 +130,12 @@ struct Sandbox {
           ));
 
     }
+    void addSquare(){
+        float sqW = 16;
+        shapes.push_back(
+            new Square(Point(width / 2 - sqW / 2, height / 2 - sqW / 2), sqW, Color::randomColor(), 200)
+        );
+    }
 
     void clearScreen() {
         shapes.clear();
@@ -136,23 +143,23 @@ struct Sandbox {
 
     void addMenu(){
         buttons.clear();
-        buttons[Button(Point((float)width / 2 - 399, height - 75), 80, 50, "Open")]
+        buttons[Button(Point(width / 2 - 399, height - 75), 80, 50, "Open")]
             = &Sandbox::addButtons;
     }
 
     void addButtons(){
         buttons.clear();
-        buttons[Button(Point((float)width / 2 + 145, height - 75), 80, 50, "Sphere")]
-            = &Sandbox::addSphere;
-        buttons[Button(Point((float)width / 2 + 230, height - 75), 80, 50, "Hexagon")]
+        buttons[Button(Point(width / 2 + 145, height - 75), 80, 50, "Square")]
+            = &Sandbox::addSquare;
+        buttons[Button(Point(width / 2 + 230, height - 75), 80, 50, "Hexagon")]
             = &Sandbox::addHexagon;
-        buttons[Button(Point((float)width / 2 + 60, height - 75), 80, 50, "Triangle")]
+        buttons[Button(Point(width / 2 + 60, height - 75), 80, 50, "Triangle")]
             = &Sandbox::addTriangle;
-        buttons[Button(Point((float)width / 2 + 315, height - 75), 80, 50, "Clear")]
+        buttons[Button(Point(width / 2 + 315, height - 75), 80, 50, "Clear")]
             = &Sandbox::clearScreen;
-        buttons[Button(Point((float)width / 2 - 70, height - 75), 120, 50, "Custom (Click 5 times)")]
+        buttons[Button(Point(width / 2 - 70, height - 75), 120, 50, "Custom (Click 5 times)")]
             = &Sandbox::addUserShape;
-        buttons[Button(Point((float)width / 2 - 399, height - 75), 80, 50, "Close")]
+        buttons[Button(Point(width / 2 - 399, height - 75), 80, 50, "Close")]
             = &Sandbox::addMenu;
     }
     const void tryClickButtons(const Point &pos){

@@ -17,6 +17,14 @@ const static std::vector<Point> constructHexagon(const Point &center, const floa
     points.push_back(Point(center.x - width / 2, center.y + width * 0.875));
     return points;
 }
+const static std::vector<Point> constructSquare(const Point &center, const float width){
+    std::vector<Point> points(4);
+    points[0] = Point(center.x + width, center.y - width);
+    points[1] = Point(center.x - width, center.y - width);
+    points[2] = Point(center.x - width, center.y + width);
+    points[3] = Point(center.x + width, center.y + width);
+    return points;
+}
 const static std::vector<Point> constructTriangle(const Point &center, const float length){
     std::vector<Point> points;
     points.push_back(Point(center.x, center.y + length));
