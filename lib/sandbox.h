@@ -127,10 +127,17 @@ struct Sandbox {
         shapes.clear();
     }
 
-    const void addButtons(){
-        buttons[Button(Point((float)width / 2 - 125, height - 75), 250, 50, "Example Button (Sphere)")]
+    void addMenu(){
+        buttons.clear();
+        buttons[Button(Point((float)width / 2 - 125, height - 75), 250, 50, "Open")]
+            = &Sandbox::addButtons;
+    }
+
+    void addButtons(){
+        buttons.clear();
+        buttons[Button(Point((float)width / 2 - 125, height - 75), 250, 50, "Sphere")]
             = &Sandbox::addSphere;
-        buttons[Button(Point((float)width / 2 + 130, height - 75), 80, 50, "Hexagon")]
+        buttons[Button(Point((float)width / 2 + 290, height - 75), 80, 50, "Hexagon")]
             = &Sandbox::addHexagon;
         buttons[Button(Point((float)width / 2 - 210, height - 75), 80, 50, "Triangle")]
             = &Sandbox::addTriangle;
@@ -138,6 +145,8 @@ struct Sandbox {
             = &Sandbox::clearScreen;
         buttons[Button(Point((float)width / 2 - 380, height - 75), 150, 50, "Custom (Click 5 times)")]
             = &Sandbox::addUserShape;
+        buttons[Button(Point((float)width / 2 - 125, height - 75), 250, 50, "Close")]
+            = &Sandbox::addMenu;
     }
     const void tryClickButtons(const Point &pos){
         for(auto i = buttons.begin(); i != buttons.end(); i++){

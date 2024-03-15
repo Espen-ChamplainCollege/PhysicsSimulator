@@ -34,7 +34,7 @@ struct UserShape : Shape {
         const float& width_,
         const Color& color_,
         const float& mass_,
-        const static std::vector<Point> vertices,
+        const std::vector<Point> vertices,
         const Point& initialVelocity = Point(0, 0),
         const float& initialRotation = 0,
         const Point& initialForce = Point(0, 0),
