@@ -18,7 +18,14 @@
 #define DEBUG_MODE false
 
 struct Sandbox {
-    int width, height;
+    inline const static bool DEBUG_VIEW_BOUNDING_BOXES = false;
+    inline const static bool DEBUG_VIEW_TRIANGULATIONS = true;
+    inline const static bool DEBUG_VIEW_CONTACTS = true;
+    inline const static bool DEBUG_NO_FILL = true;
+    inline const static bool DEBUG_PAUSE_ON_UPDATE = false;
+    inline const static bool DEBUG_PAUSE_ON_CONTACT = false;
+
+    float width, height;
     Point position;
     // std::vector<Shape> shapes <- We should have a parent class _Shape_
     // that all of our shapes inherit from, or something like that.

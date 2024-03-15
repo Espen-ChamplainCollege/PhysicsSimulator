@@ -50,6 +50,7 @@ void MainWindow::paintEvent(QPaintEvent *event){
     painter.setPen(QPen(Qt::white));
     painter.drawRect(sandbox->position.x, sandbox->position.y, sandbox->width, sandbox->height);
 
+    // really need to fix the spheres eventually
     painter.setPen(QPen(Qt::transparent));
     for(int i = 0; i < sandbox->spheres.size(); i++){
     painter.setBrush(QColor(sandbox->spheres[i]->color));
@@ -61,21 +62,39 @@ void MainWindow::paintEvent(QPaintEvent *event){
     );  // Draw ellipse (x, y, width, height)
     }
 
-    // this is how you rotate something:
-    // 1. reset the transform
-    // 2. center the transform on the object
-    // 3. rotate the transform
-    // 4. uncenter the transform on the object
-
-
     for(int i = 0; i < sandbox->shapes.size(); i++){
         Shape *s = sandbox->shapes[i];
-
-        painter.setBrush(QColor(s->color));
+        if(Sandbox::DEBUG_VIEW_TRIANGULATIONS){
+            painter.setPen(QPen(Qt::green));
+            painter.setBrush(Qt::transparent);
+            for(int k = 0; k < s->triangles.size(); k++){
+                painter.drawPolygon(Util::convertPointVector(s->triangles[k]), s->triangles[k].size());
+            }
+        }
+        if(Sandbox::DEBUG_VIEW_BOUNDING_BOXES){
+            painter.setPen(QPen(Qt::red));
+            painter.setBrush(Qt::transparent);
+            BoundingRect* br = sandbox->shapes[i]->boundingRect;
+            painter.drawRect(br->center.x - br->rx, br->center.y - br->ry, br->rx * 2, br->ry * 2);
+        }
+        if(!Sandbox::DEBUG_NO_FILL){
+            painter.setBrush(QColor(s->color));
+        }
+        painter.setPen(QPen(Qt::white));
         painter.drawPolygon(Util::convertPointVector(s->verts), s->verts.size());
     }
-
-    //painter.resetTransform();
+    if(Sandbox::DEBUG_VIEW_CONTACTS){
+        painter.setBrush(QBrush(Qt::blue));
+        painter.setPen(QPen(Qt::blue));
+        /*
+        for(auto iter = sandbox->collisions.begin(); iter != sandbox->collisions.end(); iter++){
+            for(int i = 0; i < iter->second.contacts.size(); i++){
+                painter.drawEllipse(QPointF(iter->second.contacts[i].position), 3, 3);
+                painter.drawLine(QPointF(iter->second.contacts[i].position), QPointF(iter->second.contacts[i].position + (iter->second.contacts[i].normal * 5)));
+            }
+        }
+        */
+    }
 
     // We draw the buttons/UI second because it needs to be on top.
     painter.resetTransform();
