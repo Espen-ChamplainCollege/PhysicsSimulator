@@ -4,8 +4,53 @@
 #include <algorithm>
 #include <cmath>
 #include "qpoint.h"
+#include <unordered_set>
 
+struct m_Edge {
+    Point a, b;
+    m_Edge(const Point &a_, const Point &b_){
+        a = a_ < b_ ? a_ : b_;
+        b = a == a_ ? b_ : a_;
+    };
+    m_Edge(){};
+    inline const bool operator==(const m_Edge &o) const {
+        return (a == o.a && b == o.b);
+    }
+    inline const m_Edge operator+(const Point &p) const {
+        return m_Edge(a + p, b + p);
+    }
+};
+namespace std {
+    template<> struct hash<m_Edge> {
+        std::size_t operator()(const m_Edge &e) const {
+            std::size_t hsh = 0;
+            std::size_t h1 = std::hash<Point>{}(e.a);
+            std::size_t h2 = std::hash<Point>{}(e.b);
+            hsh ^= h1 + 0x9e3779b9 + (hsh << 6) + (hsh >> 2);
+            hsh ^= h2 + 0x9e3779b9 + (hsh << 6) + (hsh >> 2);
+            return hsh;
+        }
+    };
+};
 namespace Util {
+const static std::vector<m_Edge> breakIntoEdges(const std::vector<std::vector<Point>> &triangles){
+    std::unordered_set<m_Edge> edges;
+    for(int i = 0; i < triangles.size(); i++){
+        for(int k = 0; k < triangles[i].size(); k++){
+            if(edges.find(m_Edge(triangles[i][k], triangles[i][(k + 1) % 3])) == edges.end()){
+                edges.insert(m_Edge(triangles[i][k], triangles[i][(k + 1) % 3]));
+            }
+        }
+    }
+    return std::vector<m_Edge>(edges.begin(), edges.end());
+}
+const static std::vector<m_Edge> breakIntoEdges(const std::vector<Point> &verts){
+    std::vector<m_Edge> edges;
+    for(int i = 0; i < verts.size(); i++){
+        edges.push_back(m_Edge(verts[i], verts[(i + 1) % verts.size()]));
+    }
+    return edges;
+}
 
 const static std::vector<Point> constructHexagon(const Point &center, const float width){
     std::vector<Point> points;
@@ -56,13 +101,45 @@ const static void rotatePoints(const Point &center, float rotation, std::vector<
         points[i].x = xtemp;
     }
 }
-const static void realignPoints(std::vector<Point> &points, const Point &oldCenter, const Point &newCenter){
-  for(int i = 0; i < points.size(); i++){
-    Point offset = points[i] - oldCenter;
-    points[i] = newCenter + offset;
-  }
+const static Point getRotatedPoint(const Point &center, float rotation, const Point &point){
+    rotation = degreeToRadian(rotation);
+    float sine = std::sin(rotation);
+    float cosine = std::cos(rotation);
+    Point result;
+    result.x = (cosine * (point.x - center.x) - sine * (point.y - center.y)) + center.x;
+    result.y = (sine * (point.x - center.x) + cosine * (point.y - center.y)) + center.y;
+    return result;
+}
+const static std::vector<Point> getRotatedPoints(const Point &center, float rotation, const std::vector<Point> &points){
+    rotation = degreeToRadian(rotation);
+    float sine = std::sin(rotation);
+    float cosine = std::cos(rotation);
+    std::vector<Point> result(points.size());
+    for(int i = 0; i < points.size(); i++){
+        result[i].x = (cosine * (points[i].x - center.x) - sine * (points[i].y - center.y)) + center.x;
+        result[i].y = (sine * (points[i].x - center.x) + cosine * (points[i].y - center.y)) + center.y;
+    }
+    return result;
 }
 
+
+const static void realignPoints(std::vector<Point> &points, const Point &translation){
+  for(int i = 0; i < points.size(); i++) points[i] += translation;
+}
+const inline static void rotate90Right(Point &v){
+    float temp = v.x;
+    v.x = -v.y; v.y = temp;
+}
+const inline static void rotate90Left(Point &v){
+    float temp = v.x;
+    v.x = v.y; v.y = -temp;
+}
+const inline static Point getRotated90Right(const Point &v){
+    return Point(-v.y, v.x);
+}
+const inline static Point getRotated90Left(const Point &v){
+    return Point(v.y, -v.x);
+}
 const inline static float magnitude(const Point &v){
     return std::sqrt(v.x * v.x + v.y * v.y);
 }
@@ -97,6 +174,14 @@ inline const static Point getPerpendicular(const Point &p){
 inline const static bool sameSign(float a, float b){
     return (a * b) > 0.0;
 }
+const static std::pair<m_Edge, m_Edge> getPointsEdges(const std::vector<Point> &verts, const Point &p){
+    for(int i = 0; i < verts.size(); i++){
+        if(verts[i] == p){
+            return {m_Edge(verts[(i - 1) % verts.size()], p), m_Edge(verts[(i + 1) % verts.size()], p)};
+        }
+    }
+    return {m_Edge(p, p), m_Edge(p, p)};
+}
 const static int getFurthestPoint(const std::vector<Point> &verts, const Point &p){
     int index = 0;
     float maxdot = Util::dot(p, verts[0]);
@@ -123,6 +208,9 @@ const static bool pointInTriangle(const Point &p, const Point &a, const Point &b
     float pca = Util::cross2D(p - c, a - c);
     if(!Util::sameSign(pab, pca)) return false;
     return true;
+}
+inline const static bool pointInTriangle(const Point &p, const std::vector<Point> &t){
+    return pointInTriangle(p, t[0], t[1], t[2]);
 }
 inline const static float signedTriangleArea(const Point &a, const Point &b, const Point &c){
     return (a.x - c.x) * (b.y - c.y) - (a.y - c.y) * (b.x - c.x);
@@ -152,7 +240,22 @@ const static bool lineIntersectLine(const Point &a1, const Point &a2, const Poin
     }
     return false;
 }
-
+inline const static bool edgeIntersectEdge(const m_Edge &e1, const m_Edge &e2, Point &intersection){
+    return lineIntersectLine(e1.a, e1.b, e2.a, e2.b, intersection);
+}
+inline const static bool edgeIntersectEdge(const m_Edge &e1, const m_Edge &e2, std::vector<Point> &intersections){
+    Point intersection;
+    if(lineIntersectLine(e1.a, e1.b, e2.a, e2.b, intersection)){
+        intersections.push_back(intersection);
+        return true;
+    }
+    return false;
+}
+const static Point closestPointOnEdge(const Point &p, const m_Edge &e){
+    float t = dot(p - e.a, e.b - e.a) / dot(e.b - e.a, e.b - e.a);
+    t = clamp(t, 0.0, 1.0);
+    return Point(e.a + (e.b - e.a) * t);
+}
 // http://www.cs.unc.edu/~dm/CODE/GEM/chapter.html
 // https://sites.cs.ucsb.edu/~suri/cs235/Triangulation.pdf
 // Christer Ericson - Real-Time Collision Detection Chapter 12.5

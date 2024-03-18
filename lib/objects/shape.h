@@ -18,11 +18,13 @@ struct Shape {
     float rotation;
     float angularVelocity;
     float friction;
+    float restitutionCoefficient;
     Color color;
     std::size_t id;
     std::vector<Point> verts;
     bool isStatic = false;
     std::vector<std::vector<Point>> triangles;
+    bool dry = true;
     BoundingRect *boundingRect;
     Shape(
         const Point &position_,
@@ -38,16 +40,27 @@ struct Shape {
             torque(initialTorque), inverseMass(1.0 / mass_){
         id = internalIdCount;
         internalIdCount++;
+        restitutionCoefficient = 0.1;
     };
+    inline const bool operator==(const Shape &o) const { return id == o.id; }
 
-    const void calculateInertiaTensor(){
-        if(verts.size() == 0) return;
-        inertiaTensor = 0.0;
-        float componentMass = mass / verts.size();
+    const std::pair<float, float> calculateShapeSize(){
+        if(verts.size() == 0) return {0.0, 0.0};
+        float minx = verts[0].x, maxx = verts[0].x, miny = verts[0].y, maxy = verts[0].y;
         for(int i = 0; i < verts.size(); i++){
-            inertiaTensor += componentMass * (verts[i].euclidianDistance(position) * verts[i].euclidianDistance(position));
+            if(verts[i].x < minx) minx = verts[i].x;
+            if(verts[i].x > maxx) maxx = verts[i].x;
+            if(verts[i].y < miny) miny = verts[i].y;
+            if(verts[i].y > maxy) maxy = verts[i].y;
         }
-        inverseI = 1 / inertiaTensor;
+        return {std::abs(maxx - minx), std::abs(maxy - miny)};
+    }
+    const void calculateInertiaTensor(){
+        //TODO: FIX
+        if(verts.size() == 0) return;
+        std::pair<float, float> wh = calculateShapeSize();
+        inertiaTensor = mass * (wh.first * wh.first + wh.second * wh.second);
+        inverseI = 1.0 / inertiaTensor;
     }
     const void finalize(){
         calculateInertiaTensor();
