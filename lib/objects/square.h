@@ -1,16 +1,11 @@
-#ifndef HEXAGON_H
-#define HEXAGON_H
+#ifndef SQUARE_H
+#define SQUARE_H
 
-
-#include "../../bin/point.h"
-#include "../../bin/color.h"
 #include "shape.h"
-#include "../../bin/util.h"
-
-struct Hexagon : Shape {
+struct Square : Shape {
     float width;
-    Hexagon(
-        const Point vertices[6],
+    Square(
+        const Point vertices[4],
         const Color &color_,
         const float &mass_,
         const Point &initialVelocity = Point(0, 0),
@@ -18,16 +13,15 @@ struct Hexagon : Shape {
         const Point &initialForce = Point(0, 0),
         const float &initialAngularVelocity = 0,
         const float &initialTorque = 0
-        ) : Shape(Point::averageOfArray(vertices, 6),
+    )       : Shape(Point::averageOfArray(vertices, 4), 
             color_, mass_, initialVelocity, initialRotation, initialForce,
             initialAngularVelocity, initialTorque){
-
-            for(int i = 0; i < 6; i++){
-                verts.push_back(vertices[i]);
-            }
-            finalize();
+        for(int i = 0; i < 4; i++){
+            verts.push_back(vertices[i]);
+        }
+        finalize();
     }
-    Hexagon(
+    Square(
         const Point &center,
         const float &width_,
         const Color &color_,
@@ -37,13 +31,12 @@ struct Hexagon : Shape {
         const Point &initialForce = Point(0, 0),
         const float &initialAngularVelocity = 0,
         const float &initialTorque = 0
-        ) : width(width_), Shape(center,
+    )       : width(width_), Shape(center,
             color_, mass_, initialVelocity, initialRotation, initialForce,
             initialAngularVelocity, initialTorque){
-                verts = Util::constructHexagon(center, width);
-                finalize();
-            }
+        verts = Util::constructSquare(center, width);
+        finalize();
+    }
 };
-
 
 #endif
