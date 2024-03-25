@@ -6,6 +6,7 @@
 #include <qtransform.h>
 #include <qwindowdefs.h>
 #include <qevent.h>
+#include <iostream>
 
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -42,6 +43,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event){
     if(event->key() == Qt::Key_Down) cameraPos.y -= vertScrollSpeed;
 
     if(event->key() == Qt::Key_Tab) sandbox->paused = !sandbox->paused;
+    if(event->key() == Qt::Key_Escape) QApplication::quit();
 
 }
 
@@ -103,26 +105,15 @@ void MainWindow::paintEvent(QPaintEvent *event){
                 painter.setPen(QPen(Qt::blue));
                 painter.drawLine(QPointF(iter->second.contacts[i].position), QPointF(iter->second.contacts[i].position + iter->second.contacts[i].relv));
             }
-            for(int k = 0; k < iter->second.dClosest.size(); k++){
-                painter.setPen(Qt::yellow);
-                painter.setBrush(Qt::yellow);
-                painter.drawEllipse(QPointF(iter->second.dClosest[k]), 3, 3);
-            }
-            for(int k = 0; k < iter->second.dSplitEdges.size(); k++){
-                painter.setPen(Qt::yellow);
-                painter.setBrush(Qt::yellow);
-                painter.drawLine(QPointF(iter->second.dSplitEdges[k].a), QPointF(iter->second.dSplitEdges[k].b));
-            }
-            for(int k = 0; k < iter->second.dTestEdges.size(); k++){
-                painter.setPen(Qt::green);
-                painter.setBrush(Qt::green);
-                painter.drawLine(QPointF(iter->second.dTestEdges[k].a), QPointF(iter->second.dTestEdges[k].b));
-            }
             for(int k = 0; k < iter->second.intersections.size(); k++){
                 painter.setPen(Qt::blue);
                 painter.setBrush(Qt::blue);
                 painter.drawEllipse(QPointF(iter->second.intersections[k]), 3, 3);
             }
+            /*
+            painter.setPen(Qt::magenta);
+            painter.drawLine(QPointF(iter->second.contactEdge_.a), QPointF(iter->second.contactEdge_.b));
+            */
         }
     }
     // We draw the buttons/UI second because it needs to be on top.

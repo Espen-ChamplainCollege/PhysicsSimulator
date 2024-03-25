@@ -103,7 +103,7 @@ struct Contact {
     Contact(const Contact &o) : position(o.position), normal(o.normal), tangent(o.tangent), s1c(o.s1c), s2c(o.s2c), relv(o.relv), accuNormal(o.accuNormal), accuTangent(o.accuTangent), accuNormalBias(o.accuNormalBias), mNormal(o.mNormal), mTangent(o.mTangent), bias(o.bias), separation(o.separation), fp(o.fp), shape1(o.shape1), shape2(o.shape2){}
 };
 
-inline const static int MAX_CONTACTS = 3;
+inline const static int MAX_CONTACTS = 200;
 struct Collision {
     Shape* s1;
     Shape* s2;
@@ -148,6 +148,7 @@ struct Collision {
      * https://www.geometrictools.com/Documentation/ComputingImpulsiveForces.pdf
      */
 
+    #define DBG(x) std::cout << #x": " << x << std::endl
 
     // Collision response, does not work.
     const void cache(float inverseTime){
@@ -163,7 +164,6 @@ struct Collision {
             c->mNormal = 1.0 / (b1->inverseMass + b2->inverseMass 
                 + b1->inverseI * (Util::dot(c1, c1) - nd1 * nd1) 
                 + b2->inverseI * (Util::dot(c2, c2) - nd2 * nd2));
-            c->mNormal /= 2;
 
             Point tan = Util::cross2D(c->normal, 1.0);
             float td1 = Util::dot(c1, tan);
@@ -171,69 +171,75 @@ struct Collision {
             c->mTangent = 1.0 / (b1->inverseMass + b2->inverseMass
                 + b1->inverseI * (Util::dot(c1, c1) - td1 * td1)
                 + b2->inverseI * (Util::dot(c2, c2) - td2 * td2));
-            c->mTangent /= 2;
-            c->bias = -BIAS_FACTOR * inverseTime * Util::min(0.0, c->separation + ALLOWED_PENETRATION);
+
+
+            c->bias = -BIAS_FACTOR * inverseTime * Util::max(0.0, c->separation + ALLOWED_PENETRATION);
             Point impulse = c->normal * c->accuNormal + tan * c->accuTangent; 
-            if(!b1->isStatic){
-                b1->velocity -= impulse * b1->inverseMass;
-                b1->angularVelocity -= b1->inverseI * Util::cross2D(c1, impulse);
-            }
-            if(!b2->isStatic){
-                b2->velocity += impulse * b2->inverseMass;
-                b2->angularVelocity += b2->inverseI * Util::cross2D(c2, impulse);
-            }
+            b1->velocity -= impulse * b1->inverseMass;
+            b1->angularVelocity -= b1->inverseI * Util::cross2D(c1, impulse);
+            b2->velocity += impulse * b2->inverseMass;
+            b2->angularVelocity += b2->inverseI * Util::cross2D(c2, impulse);
         }
     }
 
     // Collision response, does not work.
+    const Point getRelativeVeloicty(Shape* b1, Shape* b2, const Point &c1, const Point &c2){
+        return (b2->velocity - Util::cross2D(b2->angularVelocity, c2)) - (b1->velocity - Util::cross2D(b1->angularVelocity, c1));
+    }
     const void apply(){
-        return;
         for(int i = 0; i < contacts.size(); i++){
             Contact* c = &contacts[i];
             Shape* b1 = c->shape1;
             Shape* b2 = c->shape2;
             Point c1 = c->position - b1->position;
             Point c2 = c->position - b2->position;
-            Point relv = b2->velocity + Util::cross2D(b2->angularVelocity, c2) - b1->velocity - Util::cross2D(b1->angularVelocity, c1);
-
+            Point relv = getRelativeVeloicty(b1, b2, c1, c2);
             float veln = Util::dot(relv, c->normal);
             
             float nmag = c->mNormal * (-veln + c->bias);
-            float pn = c->accuNormal;
-            c->accuNormal = Util::max(pn + nmag, 0.0);
-            nmag = c->accuNormal - pn;
+            
+            if(false){
+                float pn = c->accuNormal;
+                c->accuNormal = Util::min(pn + nmag, 0.0);
+                nmag = c->accuNormal - pn;
+            
+            } else {
+                nmag = Util::min(nmag, 0.0);
+            }
+            
 
             Point normalImpulse = c->normal * nmag;
-            if(!b1->isStatic){
-                b1->velocity -= normalImpulse * b1->inverseMass;
-                b1->angularVelocity -= b1->inverseI * Util::cross2D(c1, normalImpulse);
-            }
-            if(!b2->isStatic){
-                b2->velocity += normalImpulse * b2->inverseMass;
-                b2->angularVelocity += b2->inverseI * Util::cross2D(c2, normalImpulse);
-            }
 
-            relv = b2->velocity + Util::cross2D(b2->angularVelocity, c2) - b1->velocity - Util::cross2D(b1->angularVelocity, c1);
+            b1->velocity -= normalImpulse * b1->inverseMass;
+            b1->angularVelocity -= b1->inverseI * Util::cross2D(c1, normalImpulse);
+            b2->velocity += normalImpulse * b2->inverseMass;
+            b2->angularVelocity += b2->inverseI * Util::cross2D(c2, normalImpulse);
+
+            relv = getRelativeVeloicty(b1, b2, c1, c2);
             Point tan = Util::cross2D(c->normal, 1.0);
             float velt = Util::dot(relv, tan);
             float tmag = c->mTangent * (-velt);
-            float maxTan = friction * c->accuNormal;
-            float oldTan = c->accuTangent;
-            c->accuTangent = Util::clamp(oldTan + tmag, -maxTan, maxTan);
-            tmag = c->accuTangent -oldTan;
+
+            if(true){
+                float maxTan = friction * c->accuNormal;
+                float oldTan = c->accuTangent;
+                c->accuTangent = Util::clamp(oldTan + tmag, -maxTan, maxTan);
+                tmag = c->accuTangent - oldTan;
+            } else {
+                float maxTan = friction * nmag;
+                tmag = Util::clamp(tmag, -maxTan, maxTan);
+            }
+            
+
             Point tangentImpulse = tan * tmag;
-            if(!b1->isStatic){
-                b1->velocity -= tangentImpulse * b1->inverseMass;
-                b1->angularVelocity -= b1->inverseI * Util::cross2D(c1, tangentImpulse);
-            }
-            if(!b2->isStatic){
-                b2->velocity += tangentImpulse * b2->inverseMass;
-                b2->angularVelocity += b2->inverseI * Util::cross2D(c2, tangentImpulse);
-            }
+            b1->velocity -= tangentImpulse * b1->inverseMass;
+            b1->angularVelocity -= b1->inverseI * Util::cross2D(c1, tangentImpulse);
+            b2->velocity += tangentImpulse * b2->inverseMass;
+            b2->angularVelocity += b2->inverseI * Util::cross2D(c2, tangentImpulse);
 
         }
     }
-    const float CONTACT_THRESHOLD = 1;
+    const float CONTACT_THRESHOLD = 5;
     const void edgeTest(Shape* shape1, Shape* shape2, const std::vector<Point> &verts, const std::vector<m_Edge> &edges){
         for(int i = 0; i < verts.size(); i++){
             for(int k = 0; k < edges.size(); k++){
@@ -244,7 +250,7 @@ struct Collision {
                     c.shape1 = shape1;
                     c.shape2 = shape2;
                     c.position = shape1->verts[i];
-                    c.normal = -Util::getRotated90Left(edges[k].b - edges[k].a);
+                    c.normal = Util::getRotated90Left(edges[k].b - edges[k].a);
                     c.separation = -Util::magnitude(c.normal);
                     Util::normalize(c.normal);
                     c.fp = FeaturePair(
@@ -297,7 +303,7 @@ struct Collision {
                     Point closest = Util::closestPointOnEdge(verts[i], contactEdge);
 
                     dClosest.push_back(closest);
-                    c.normal = -(closest - verts[i]);
+                    c.normal = (closest - verts[i]);
                     c.separation = -Util::magnitude(c.normal);
                     Util::normalize(c.normal);
                     c.fp = FeaturePair(
