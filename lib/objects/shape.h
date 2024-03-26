@@ -59,7 +59,8 @@ struct Shape {
         //TODO: FIX
         if(verts.size() == 0) return;
         std::pair<float, float> wh = calculateShapeSize();
-        inertiaTensor = mass * (wh.first * wh.first + wh.second * wh.second);
+        // inertiaTensor = mass * mass * (wh.first * wh.first + wh.second * wh.second);
+        inertiaTensor = 34133.3;
         inverseI = 1.0 / inertiaTensor;
     }
     const void finalize(){

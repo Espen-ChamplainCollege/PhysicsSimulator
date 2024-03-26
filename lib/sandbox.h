@@ -29,7 +29,7 @@ struct Sandbox {
     inline const static bool DEBUG_VIEW_VELOCITY = true;
     inline const static bool DEBUG_NO_FILL = true;
     inline const static bool DEBUG_PAUSE_ON_UPDATE = false;
-    inline const static bool DEBUG_PAUSE_ON_CONTACT = true;
+    inline const static bool DEBUG_PAUSE_ON_CONTACT = false; 
     inline const static bool DEBUG_AUTO_SPAWN_SQUARE = true;
 
     float width, height;
@@ -142,7 +142,10 @@ struct Sandbox {
         shapes.push_back(
             new Square(Point(width / 2 - sqW / 2, height / 2 - sqW / 2), sqW, Color::randomColor(), DEFAULT_MASS)
         );
-        shapes[shapes.size() - 1]->friction = 0.2;
+        Shape* s = shapes[shapes.size() - 1];
+        s->friction = 0.2;
+        // s->rotation = 45;
+        Util::rotatePoints(s->position, s->rotation, s->verts);
     }
     
     void addStaticBody(const Point &center, float w, float h){
@@ -155,7 +158,7 @@ struct Sandbox {
                 Color(255, 255, 255)
             )
         );
-        shapes[shapes.size() - 1]->friction = 0.5;
+        shapes[shapes.size() - 1]->friction = 0.2;
         
     }
 
@@ -251,21 +254,12 @@ private:
                         shapes[k]->dry = false;
                         shapes[k]->recalculateTriangulation();
                     }
-                    // if(!collision.s1->isStatic) std::cout << collision.s1->position << std::endl;
-                    // if(!collision.s2->isStatic) std::cout << collision.s2->position << std::endl;
                     if(possibilities.find(key) == possibilities.end()){
                         possibilities.insert({key, collision});
                     }
                 } else {
                     collisions.erase(key);
                 }
-            }
-        }
-        for(MapIterator iter = collisions.begin(); iter != collisions.end(); ){
-            if(iter->second.realIntersectionTest() > 0){
-                ++iter;
-            } else {
-                iter = collisions.erase(iter);
             }
         }
         for(MapIterator iter = possibilities.begin(); iter != possibilities.end(); ){
@@ -275,11 +269,10 @@ private:
                 } else {
                     collisions.at(iter->first).refresh(iter->second.contacts);
                 }
-                ++iter;
             }
+            ++iter;
         }
-
-        for(MapIterator iter = collisions.begin(); iter != collisions.end(); ++iter) iter->second.cache(1.0 / time);
+        possibilities.clear();
     }
     const void applyVelocities(double time){
         for(int i = 0; i < shapes.size(); i++){
@@ -299,6 +292,7 @@ private:
     }
     const int COLLISION_ITERATIONS = 10;
     const void solveCollisions(double time){
+        for(MapIterator iter = collisions.begin(); iter != collisions.end(); ++iter) iter->second.cache(1.0 / time);
         for(int i = 0; i < COLLISION_ITERATIONS; i++){
             for(MapIterator iter = collisions.begin(); iter != collisions.end(); ++iter) iter->second.apply();
         }
@@ -306,12 +300,15 @@ private:
     const void update(double time){
         applyForces(time);
         processCollisions(time);
-        solveCollisions(time);
-        applyVelocities(time);
         if((DEBUG_PAUSE_ON_CONTACT && collisions.size() > 0) || DEBUG_PAUSE_ON_UPDATE){
             paused = true;
             while(paused){}
         }
+        solveCollisions(time);
+        if(collisions.size() > 0){
+            // exit(0);
+        }
+        applyVelocities(time);
     }
 };
 

@@ -225,6 +225,9 @@ const static float sqDistanceToLine(const Point &a, const Point &b, const Point 
     if(e >= f) return dot(bp, bp);
     return dot(ap, ap) - e * e / f;
 }
+const static float sqDistanceToLine(const m_Edge &e, const Point &p){
+    return sqDistanceToLine(e.a, e.b, p);
+}
 
 const static bool lineIntersectLine(const Point &a1, const Point &a2, const Point &b1, const Point &b2, Point &intersection){
     float area1 = signedTriangleArea(a1, a2, b2);
@@ -250,6 +253,18 @@ inline const static bool edgeIntersectEdge(const m_Edge &e1, const m_Edge &e2, s
         return true;
     }
     return false;
+}
+const static m_Edge closestEdgeToPoint(const std::vector<m_Edge> &edges, const Point &point){
+    float cd = sqDistanceToLine(edges[0], point);
+    int index = 0;
+    for(int i = 1; i < edges.size(); i++){
+        float d = sqDistanceToLine(edges[i], point);
+        if(d < cd){
+            cd = d;
+            index = i;
+        }
+    }
+    return edges[index];
 }
 const static Point closestPointOnEdge(const Point &p, const m_Edge &e){
     float t = dot(p - e.a, e.b - e.a) / dot(e.b - e.a, e.b - e.a);

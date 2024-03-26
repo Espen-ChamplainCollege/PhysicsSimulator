@@ -25,6 +25,7 @@ struct BoundingRect {
         ry = (maxy - miny) / 2;
         min = Point(minx, miny);
         max = Point(maxx, maxy);
+        grow(scalar);
     }
     const int intersectionTest(BoundingRect &o) const {
         if (std::abs(center.x - o.center.x) > (rx + o.rx)) return 0;
@@ -39,6 +40,15 @@ struct BoundingRect {
         if(p.y > max.y) sqrtDist += (p.y - max.y) * (p.y - max.y);
         return sqrtDist;
     }
+    const void grow(const float &s){
+        scalar = s;
+        min = center + ((min - center) * scalar);
+        max = center + ((max - center) * scalar);
+        rx = (max.x - min.x) / 2;
+        ry = (max.y - min.y) / 2;
+    }
+private:
+    float scalar = 1.1;
 };
 
 #endif
