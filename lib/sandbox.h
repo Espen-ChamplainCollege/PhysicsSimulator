@@ -17,9 +17,8 @@
 #include "physics/collision.h"
 #include "../bin/util.h"
 #include "QCoreApplication"
-extern "C" {
+#define MINIAUDIO_IMPLIMENTATION
 #include "miniaudio.h"
-}
 
 #define DEBUG_MODE false
 
@@ -167,7 +166,10 @@ struct Sandbox {
     }
 
     // Set up Sounds
-    void playback_callback(ma_device * pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount) {
+
+    const char* SOUND_FILE_PATH = "../PhysicsSimulator/boop.wav";
+
+    static void playback_callback(ma_device * pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount) {
         ma_decoder* pDecoder = (ma_decoder*)pDevice->pUserData;
         if (pDecoder == NULL) {
             return;
@@ -202,7 +204,7 @@ struct Sandbox {
         deviceConfig.playback.format   = decoder.outputFormat;
         deviceConfig.playback.channels = decoder.outputChannels;
         deviceConfig.sampleRate        = decoder.outputSampleRate;
-        deviceConfig.dataCallback      = playback_callback;
+        deviceConfig.dataCallback      = &Sandbox::playback_callback;
         deviceConfig.pUserData         = &decoder;
 
         result = ma_device_init(NULL, &deviceConfig, &device);
@@ -219,10 +221,9 @@ struct Sandbox {
         }
 
         // Wait for the sound to finish playing. 
-        // This is done by waiting for the device to stop, which happens in the callback.
-        while (ma_device_is_started(&device)) {
-            ma_sleep(100); // Sleep for a short while to reduce CPU usage.
-        }
+        /*while (ma_device_is_started(&device)) {
+            ma_sleep(100);
+        }*/
 
         // Cleanup.
         ma_device_uninit(&device);
@@ -254,6 +255,7 @@ struct Sandbox {
             = &Sandbox::addMenu;
     }
     const void tryClickButtons(const Point &pos){
+        play_sound(SOUND_FILE_PATH);
         for(auto i = buttons.begin(); i != buttons.end(); i++){
             if(i->first.areaContains(pos)) {
             // "*this" dereference _this_ pointer. ".*" dereference the pointer to the function. "()" call the function.

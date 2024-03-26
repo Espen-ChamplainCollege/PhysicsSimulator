@@ -5,7 +5,14 @@
     ]
   },
   "ExpandedNodes": [
-    ""
+    "",
+    "\\application",
+    "\\bin",
+    "\\lib",
+    "\\lib\\gui",
+    "\\lib\\objects",
+    "\\lib\\physics"
   ],
+  "SelectedNode": "\\lib\\sandbox.h",
   "PreviewInSolutionExplorer": false
 }
