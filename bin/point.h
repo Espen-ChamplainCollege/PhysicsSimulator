@@ -79,6 +79,7 @@ struct Point {
     const void operator-=(const Point &o) { x -= o.x; y -= o.y; }
     const void operator*=(const Point &o) { x *= o.x; y *= o.y; }
     const void operator/=(const Point &o) { x /= o.x; y /= o.y; }
+    const Point operator-() const { return Point(-x, -y); }
     explicit operator const std::string() const { return std::string('(' + std::to_string(x) + ", " + std::to_string(y) + ')'); }
 
     #ifdef QGLOBAL_H
