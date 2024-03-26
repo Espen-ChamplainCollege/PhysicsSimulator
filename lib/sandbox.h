@@ -17,6 +17,9 @@
 #include "physics/collision.h"
 #include "../bin/util.h"
 #include "QCoreApplication"
+extern "C" {
+#include "miniaudio.h"
+}
 
 #define DEBUG_MODE false
 
@@ -162,6 +165,72 @@ struct Sandbox {
     void clearScreen() {
         shapes.clear();
     }
+
+    // Set up Sounds
+    void playback_callback(ma_device * pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount) {
+        ma_decoder* pDecoder = (ma_decoder*)pDevice->pUserData;
+        if (pDecoder == NULL) {
+            return;
+        }
+
+        ma_uint32 framesRead = ma_decoder_read_pcm_frames(pDecoder, pOutput, frameCount, NULL);
+
+        // Make sure we play the whole sound
+        if (framesRead < frameCount) {
+            ma_uint32 totalSizeInBytes = frameCount * ma_get_bytes_per_frame(pDecoder->outputFormat, pDecoder->outputChannels);
+            ma_uint32 bytesRead = framesRead * ma_get_bytes_per_frame(pDecoder->outputFormat, pDecoder->outputChannels);
+            memset((unsigned char*)pOutput + bytesRead, 0, totalSizeInBytes - bytesRead);
+
+            ma_device_stop(pDevice);
+        }
+        (void)pInput;
+    }
+
+    bool play_sound(const char* filePath) {
+        ma_result result;
+        ma_decoder decoder;
+        ma_device_config deviceConfig;
+        ma_device device;
+
+        result = ma_decoder_init_file(filePath, NULL, &decoder);
+        if (result != MA_SUCCESS) {
+            printf("Failed to initialize decoder.\n");
+            return false;
+        }
+
+        deviceConfig = ma_device_config_init(ma_device_type_playback);
+        deviceConfig.playback.format   = decoder.outputFormat;
+        deviceConfig.playback.channels = decoder.outputChannels;
+        deviceConfig.sampleRate        = decoder.outputSampleRate;
+        deviceConfig.dataCallback      = playback_callback;
+        deviceConfig.pUserData         = &decoder;
+
+        result = ma_device_init(NULL, &deviceConfig, &device);
+        if (result != MA_SUCCESS) {
+            ma_decoder_uninit(&decoder);
+            return false;
+        }
+
+        result = ma_device_start(&device);
+        if (result != MA_SUCCESS) {
+            ma_device_uninit(&device);
+            ma_decoder_uninit(&decoder);
+            return false;
+        }
+
+        // Wait for the sound to finish playing. 
+        // This is done by waiting for the device to stop, which happens in the callback.
+        while (ma_device_is_started(&device)) {
+            ma_sleep(100); // Sleep for a short while to reduce CPU usage.
+        }
+
+        // Cleanup.
+        ma_device_uninit(&device);
+        ma_decoder_uninit(&decoder);
+
+        return true;
+    }
+
 
     void addMenu(){
         buttons.clear();
