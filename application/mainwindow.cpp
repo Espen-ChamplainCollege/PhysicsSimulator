@@ -1,3 +1,5 @@
+
+#include "../lib/miniaudio.h"
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "qpainter.h"
@@ -7,6 +9,7 @@
 #include <qwindowdefs.h>
 #include <qevent.h>
 #include <iostream>
+
 
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -149,10 +152,77 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event){
     sandbox->tryClickButtons(event->pos());
 }
 
+// Set up Sounds
+
+const char* SOUND_FILE_PATH = "../PhysicsSimulator/boop.mp3";
+
+static void playback_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount) {
+    ma_decoder* pDecoder = (ma_decoder*)pDevice->pUserData;
+    if (pDecoder == NULL) {
+        return;
+    }
+
+    ma_uint32 framesRead = ma_decoder_read_pcm_frames(pDecoder, pOutput, frameCount, NULL);
+
+    // Make sure we play the whole sound
+    if (framesRead < frameCount) {
+        ma_uint32 totalSizeInBytes = frameCount * ma_get_bytes_per_frame(pDecoder->outputFormat, pDecoder->outputChannels);
+        ma_uint32 bytesRead = framesRead * ma_get_bytes_per_frame(pDecoder->outputFormat, pDecoder->outputChannels);
+        memset((unsigned char*)pOutput + bytesRead, 0, totalSizeInBytes - bytesRead);
+
+        ma_device_stop(pDevice);
+    }
+    (void)pInput;
+}
+
+static bool playSound(const char* filePath) {
+    ma_result result;
+    ma_decoder decoder;
+    ma_device_config deviceConfig;
+    ma_device device;
+
+    result = ma_decoder_init_file(filePath, NULL, &decoder);
+    if (result != MA_SUCCESS) {
+        printf("Failed to initialize decoder.\n");
+        return false;
+    }
+
+    deviceConfig = ma_device_config_init(ma_device_type_playback);
+    deviceConfig.playback.format    = decoder.outputFormat;
+    deviceConfig.playback.channels  = decoder.outputChannels;
+    deviceConfig.sampleRate         = decoder.outputSampleRate;
+    deviceConfig.dataCallback       = playback_callback;
+    deviceConfig.pUserData          = &decoder;
+
+    result = ma_device_init(NULL, &deviceConfig, &device);
+    if (result != MA_SUCCESS) {
+        ma_decoder_uninit(&decoder);
+        return false;
+    }
+
+    result = ma_device_start(&device);
+    if (result != MA_SUCCESS) {
+        ma_device_uninit(&device);
+        ma_decoder_uninit(&decoder);
+        return false;
+    }
+
+    // Wait for the sound to finish playing. 
+    /*while (ma_device_is_started(&device)) {
+        ma_sleep(100);
+    }*/
+
+    ma_device_uninit(&device);
+    ma_decoder_uninit(&decoder);
+
+    return true;
+}
+
 void MainWindow::mousePressEvent(QMouseEvent* event) {
     if ((sandbox->checkMouseClick) && (sandbox->userShapePoints.size() < sandbox->userShapeVerts)) {
         Point mousePos = QWidget::mapFromGlobal(QCursor::pos());
         sandbox->userShapePoints.push_back(mousePos);
+        playSound(SOUND_FILE_PATH);
     }
 }
 
